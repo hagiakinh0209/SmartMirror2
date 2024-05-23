@@ -1,0 +1,150 @@
+*:focus {
+    outline: none;
+}
+
+html {
+    background: #f2f2f2;
+}
+
+body {
+    margin: 0;
+    font-family: "Raleway", sans-serif;
+}
+
+h1 {
+    margin: 0;
+    font-size: 33px;
+    color: rgba(255, 255, 255);
+    padding: 0 10%;
+}
+
+h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+    color: rgba(255, 255, 255);
+    padding: 0 10%;
+}
+.dateTime{
+    font-size: 40px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: rgba(255, 255, 255);
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+}
+
+.container-fluid {
+    display: block;
+    margin: auto;
+    overflow: hidden;
+    background-image: url("https://i.pinimg.com/236x/d4/32/89/d43289c071866276d5f3148a77a9de7c.jpg");
+    background-repeat: repeat;
+    background-size: cover;
+    /* Set rules to fill background */
+    min-height: 100%;
+    min-width: 1024px;
+
+    /* Set up proportionate scaling */
+    width: 100%;
+    height: auto;
+
+    /* Set up positioning */
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+@media screen and (max-width: 1024px) { /* Specific to this particular image */
+    .container-fluid {
+      left: 50%;
+      margin-left: -512px;   /* 50% */
+    }
+  }
+
+.well {
+    margin-top: 5%;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+.well>.row {
+    float: right;
+    position: relative;
+    width: 400px;
+    height: 570px;
+    margin: auto;
+    border-radius: 10px 10px 10px 10px;
+    background: transparent linear-gradient(to bottom, rgba(10, 11, 31, 0.8) 50%, rgba(10, 11, 31, 0.8) 70%) repeat scroll 0 0;
+    box-shadow: 1px 10px 20px 5px #222;
+}
+
+.titre {
+    float: left;
+    width: 100%;
+}
+
+.songMetaData {
+    color: rgba(255, 255, 255);
+    font-size: 22px;
+    font-weight: 500;
+}
+
+.lecteur {
+    width: 100%;
+    display: block;
+    height: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.cover {
+    float: left;
+    width: 100%;
+    height: 66%;
+}
+
+.cover img {
+    display: block;
+    position: absolute;
+    top: 8%;
+    left: 14%;
+    width: 70%;
+    margin: auto;
+    text-align: center;
+}
+
+.well>.thoitiet {
+    float: left;
+    width: 30%;
+}
+
+#otiet {
+    background: #fff;
+    padding: 10px;
+    width: 30%;
+    border: none;
+}
+
+#timtiet {
+    background: #666;
+    border: none;
+    color: #fff;
+}
+.weather_loading{
+    font-size: 25px;
+    font-weight: 500;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    color: rgba(255, 255, 255);
+}
+#chatBotAnswerTextBox{
+    background: transparent ;
+    border-radius: 4px;
+    padding: 12px 12px;
+    color: #fff;
+}
+#chatBotEditText{
+    background: transparent ;
+    border-radius: 4px;
+    padding: 12px 12px;
+    color: #fff;
+}
