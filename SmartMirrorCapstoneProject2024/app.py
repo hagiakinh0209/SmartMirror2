@@ -1,16 +1,13 @@
-from flask import Flask,render_template, Response
+from flask import Flask,render_template
 import sys
 # Tornado web server
-from tornado.wsgi import WSGIContainer
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tinytag import TinyTag
 from flask_socketio import SocketIO
 from time import sleep
 import threading
 from lib.HandGestureControl import Main
 import json
 from lib.LlmChatBot.LlmChatBot import AskChatBot
+from lib.SpeechToTextModule.SpeechToTextModule import SpeechToText
 
 #Debug logger
 import logging 
@@ -24,26 +21,25 @@ formatter = logging.Formatter(
 ch.setFormatter(formatter)
 root.addHandler(ch)
 
-import os
-
-def return_dict():
-    dict_here = []
-    i = 1
-    for filename in os.listdir("./music"):
-        f = os.path.join("./music", filename)
-        print(f)
-        if os.path.isfile(f):
-            tag = TinyTag.get(f)
-            dict_here.append({ "id": i, "name": tag.title, "link": "music/"+filename, "genre": tag.genre, "artist": tag.artist})
-            print(dict_here)
-            i = i + 1
-    return dict_here
 
 # Initialize Flask.
 app = Flask(__name__)
 socket = SocketIO(app)
 
+def onReceiveSpeechToText(predictedText):
+    socket.send(predictedText)
 
+
+def notifier(chatBotAnswer):
+    socket.emit("chatBotAnswer", json.loads(json.dumps({ "answer": chatBotAnswer})))
+chatBot = AskChatBot()
+chatBot.setNotifier(notifier)
+
+
+
+def return_dict():
+    dict_here = []
+    return dict_here
 
 class MusicController:
     playOrPause = False
@@ -84,46 +80,30 @@ class MusicController:
     def updateSongMetadata():
         socket.emit( 'updateMetaData', json.loads(json.dumps(return_dict()[MusicController.currentSongIndex -1])) )    
         # socket.send("asdnajsdk")
-mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong)
+
+
 
 #Route to render GUI
 @app.route('/')
 def show_entries():
     general_Data = {
         'title': 'Music Player'}
-    # print(return_dict())
-    stream_entries = return_dict()[0] #remember to set this to return_dict()[i] to switch song
-    socket.emit( 'updateMetaData', json.loads(json.dumps(stream_entries)) )
-    print(json.loads(json.dumps(stream_entries)))
-    return render_template('design.html', entry=stream_entries, **general_Data)
+    return render_template('design.html', **general_Data)
 
-
-#Route to stream music
-@app.route('/<int:stream_id>')
-def streammp3(stream_id):
-    def generate(stream_id):
-        item = return_dict()[stream_id - 1] #remember to set this to return_dict()[i] to switch song
-        count = 1
-        if item['id'] == stream_id:
-            song = item['link']
-        with open(song, "rb") as fwav:
-            data = fwav.read(1024)
-            while data:
-                yield data
-                data = fwav.read(1024)
-                logging.debug('Music data fragment : ' + str(count))
-                count += 1
-                
-    return Response(generate(stream_id), mimetype="audio/mp3")
 @socket.on('connect')
 def on_connect(msg):
     print('Server received connection')
+    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong)
+    handGestureThread = threading.Thread(target=mHandGesture.run)
+    handGestureThread.start()
 
-    t1 = threading.Thread(target=task)
-    # t2 = threading.Thread(target=task1)
-    
-    t1.start()
-    # t2.start()
+@socket.on("asdfghjkl")
+def talk(msg):
+    speechToText = SpeechToText(onReceiveSpeechToText)
+    if (msg["asdfghjkl"]) and  (not speechToText.isRunning()):
+        print(msg["asdfghjkl"])
+        speechToText.start()
+        
 @socket.on('message')
 def onSongChange(msg):
     if msg == "onSongChange":
@@ -151,14 +131,9 @@ def onSearchingForYoutubeSong(msg):
         return ""
 
     socket.emit("youtubeSongUrl", json.loads(json.dumps({"youtubeSongUrl" : parseYoutubeURL(clip2), "yt_title" : yt_title[0]['content']})))
-def task():
-    mHandGesture.run()
-    
-def notifier(chatBotAnswer):
-    socket.emit("chatBotAnswer", json.loads(json.dumps({ "answer": chatBotAnswer})))
 
-chatBot = AskChatBot()
-chatBot.setNotifier(notifier)
+    
+
 @socket.on('askAQuestion')
 def onAskChatBot(msg):
     question = msg["askChatBot"]

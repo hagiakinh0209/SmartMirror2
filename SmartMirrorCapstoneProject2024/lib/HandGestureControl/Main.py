@@ -11,6 +11,9 @@ class HandGesture:
         self.playAndPauseCommand = playAndPauseCommand
         self.nextSongCommand = nextSongCommand
         self.previousSongCommand = previousSongCommand
+        self.stopFlag = False
+    def setStop(self):
+        self.stopFlag = True
     def run(self):
 
         wCam, hCam = 640, 480
@@ -43,6 +46,9 @@ class HandGesture:
         active = 0
 
         while True:
+            if(self.stopFlag):
+                self.stopFlag = False
+                break
             try:
                 success, img = cap.read()
                 img = detector.findHands(img)
@@ -186,3 +192,7 @@ class HandGesture:
                                 3, color, 3)
             except:
                 pass
+        print("destroy")
+        cap.release()
+        cv2.destroyAllWindows()
+        

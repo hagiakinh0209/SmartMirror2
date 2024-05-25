@@ -15,6 +15,7 @@
 
 <body>
     <div class="container-fluid">
+        <button onclick="talk()">talk</button>
         <div class="dateTime">
             <form onsubmit="submitSearchForYoutubeVid(event)">
                 <input type="text" name="song">
@@ -49,7 +50,7 @@
                 <div class="row">
                     <div class="cover">
                         <img src="https://mariongrandvincent.github.io/HTML-Personal-website/img-codePen/kygo.png"
-                            alt="">   
+                            alt="">
                     </div>
                     <div class="titre">
                         <div class="songMetaData">Name :</div>
@@ -71,7 +72,8 @@
         </div>
         <script type="text/javascript" src="{{ url_for('static',filename='javascript/youtubeSong.js') }}"> </script>
         <script>
-
+            var socket = io()  
+            
             function playAudio() {
                 player.playVideo()
             }
@@ -79,7 +81,6 @@
             function pauseAudio() {
                 player.pauseVideo()
             }
-            var socket = io()
             socket.connect('https://127.0.0.1:5000/')
             socket.on('connect', function () { })
             socket.on('message', function (msg) {
@@ -132,6 +133,10 @@
                 document.getElementById("chatBotLoadingImage").style.display = "none"
 
             })
+            function talk(){
+                console.log("talk");
+                socket.emit("asdfghjkl", {asdfghjkl : true})
+            }
         </script>
         <script type="text/javascript" src="app.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
