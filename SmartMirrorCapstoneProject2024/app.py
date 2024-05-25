@@ -1,6 +1,5 @@
 from flask import Flask,render_template
 import sys
-# Tornado web server
 from flask_socketio import SocketIO
 from time import sleep
 import threading
@@ -8,6 +7,7 @@ from lib.HandGestureControl import Main
 import json
 from lib.LlmChatBot.LlmChatBot import AskChatBot
 from lib.SpeechToTextModule.SpeechToTextModule import SpeechToText
+from lib.Utils import Utils
 
 #Debug logger
 import logging 
@@ -26,10 +26,13 @@ root.addHandler(ch)
 app = Flask(__name__)
 socket = SocketIO(app)
 
+# This function is the callback when the speech to text module finished transcibing. 
+# predictedText is the output if speech to text module.
 def onReceiveSpeechToText(predictedText):
     socket.send(predictedText)
 
-
+# This function is the callback when the chat bot module finished its works. 
+# chatBotAnswer is out in the form of string.
 def notifier(chatBotAnswer):
     socket.emit("chatBotAnswer", json.loads(json.dumps({ "answer": chatBotAnswer})))
 chatBot = AskChatBot()
@@ -97,11 +100,11 @@ def on_connect(msg):
     handGestureThread = threading.Thread(target=mHandGesture.run)
     handGestureThread.start()
 
-@socket.on("asdfghjkl")
+@socket.on("userWantToTak")
 def talk(msg):
     speechToText = SpeechToText(onReceiveSpeechToText)
-    if (msg["asdfghjkl"]) and  (not speechToText.isRunning()):
-        print(msg["asdfghjkl"])
+    if (msg["userWantToTak"]) and  (not speechToText.isRunning()):
+        print(msg["userWantToTak"])
         speechToText.start()
         
 @socket.on('message')
