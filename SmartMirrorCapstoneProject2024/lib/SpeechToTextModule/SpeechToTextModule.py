@@ -11,11 +11,15 @@ class SpeechToText:
 
     def start(self):
         self.__isRunning = True
-        with self.mic as source:
-            self.recognizer.adjust_for_ambient_noise(source)
-            audio = self.recognizer.listen(self.mic, timeout=3)
-            self.onReceiveSpeechToText(self.recognizer.recognize(audio)) #Output
+        try:
+            with self.mic as source:
+                self.recognizer.adjust_for_ambient_noise(source)
+                audio = self.recognizer.listen(self.mic, timeout=3)
+                self.onReceiveSpeechToText(self.recognizer.recognize(audio)) #Output
+        except:
+                pass
         self.__isRunning = False
+        
 
     def isRunning(self):
         return self.__isRunning

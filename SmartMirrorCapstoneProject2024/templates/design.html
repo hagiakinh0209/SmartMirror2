@@ -17,12 +17,12 @@
     <div class="container-fluid">
         <button onclick="talk()">talk</button>
         <div class="dateTime">
-            <form onsubmit="submitSearchForYoutubeVid(event)">
-                <input type="text" name="song">
+            <form onsubmit="submitSearchForYoutubeVid(event)" id = "searchForYoutubeVidForm">
+                <input type="text" name="song" id = "searchYoutubeVidEditText">
                 <input type="submit" value="search">
             </form>
-            <form onsubmit="submitAskChatBot(event)">
-                <input type="text" name="askChatBot">
+            <form onsubmit="submitAskChatBot(event)" id = "chatBotForm">
+                <input type="text" name="askChatBot" id = "chatBotEditText">
                 <input type="submit" value="ask">
             </form>
             <p id="clock"></p>
@@ -137,6 +137,14 @@
                 console.log("talk");
                 socket.emit("userWantToTak", {userWantToTak : true})
             }
+            socket.on("speechToTextOutPut_chatbot", function(msg){
+                console.log(msg.speechToTextOutPut_chatbot);
+                document.getElementById("chatBotEditText").value = msg.speechToTextOutPut_chatbot
+            })
+            socket.on("speechToTextOutPut_play", function(msg){
+                console.log(msg.speechToTextOutPut_play);
+                document.getElementById("searchYoutubeVidEditText").value = msg.speechToTextOutPut_play
+            })
         </script>
         <script type="text/javascript" src="app.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>

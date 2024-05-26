@@ -1,0 +1,1 @@
+ffmpeg -re -i ttsmaker-file-2024-5-26-11-41-34.mp3  -f s16le -ar 16000 -ac 1 -> /home/kinh/audioFiles/virtmic

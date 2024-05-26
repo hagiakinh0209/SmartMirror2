@@ -29,7 +29,20 @@ socket = SocketIO(app)
 # This function is the callback when the speech to text module finished transcibing. 
 # predictedText is the output if speech to text module.
 def onReceiveSpeechToText(predictedText):
-    socket.send(predictedText)
+    print(predictedText)
+    # change "start =" later
+    if Utils.checkStartWithString(start= "where", string=predictedText) :
+        # if Utils.checkStartWithString(start="", string=):
+        #This will only render a text in the input form on the front end side. Nothing else.
+        socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": predictedText})))
+
+        # This will generate the answer and then automatically render to the text box on the front end side.
+        chatBot.ask(str(predictedText))
+    if Utils.checkStartWithString(start="play", string=predictedText):
+        #This will only render a text in the input form on the front end side. Nothing else.
+        socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len("play"):]})))
+        queryYoutubeVidIdAndSendToFrontEnd(predictedText[len("play"):])
+        
 
 # This function is the callback when the chat bot module finished its works. 
 # chatBotAnswer is out in the form of string.
@@ -114,10 +127,13 @@ def onSongChange(msg):
 @socket.on('searchForSong')
 def onSearchingForYoutubeSong(msg):
     # socket.send("server received message : " + msg["songName"])
+    music_name = msg["songName"]
+    queryYoutubeVidIdAndSendToFrontEnd(music_name)
+def queryYoutubeVidIdAndSendToFrontEnd(music_name):
     import re, requests, urllib.parse, urllib.request
     from bs4 import BeautifulSoup
 
-    music_name = msg["songName"]
+    
     query_string = urllib.parse.urlencode({"search_query": music_name})
     formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
 
