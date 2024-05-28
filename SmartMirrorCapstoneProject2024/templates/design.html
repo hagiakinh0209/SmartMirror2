@@ -140,10 +140,12 @@
             socket.on("speechToTextOutPut_chatbot", function(msg){
                 console.log(msg.speechToTextOutPut_chatbot);
                 document.getElementById("chatBotEditText").value = msg.speechToTextOutPut_chatbot
+                document.getElementById("chatBotLoadingImage").style.display = "block"
             })
             socket.on("speechToTextOutPut_play", function(msg){
                 console.log(msg.speechToTextOutPut_play);
                 document.getElementById("searchYoutubeVidEditText").value = msg.speechToTextOutPut_play
+                document.getElementById("youtube-icon").src = "https://i.gifer.com/ZKZg.gif"
             })
         </script>
         <script type="text/javascript" src="app.js"></script>

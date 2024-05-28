@@ -21,6 +21,7 @@ formatter = logging.Formatter(
 ch.setFormatter(formatter)
 root.addHandler(ch)
 
+mutex = threading.Lock()
 
 # Initialize Flask.
 app = Flask(__name__)
@@ -31,18 +32,24 @@ socket = SocketIO(app)
 def onReceiveSpeechToText(predictedText):
     print(predictedText)
     # change "start =" later
-    if Utils.checkStartWithString(start= "where", string=predictedText) :
-        # if Utils.checkStartWithString(start="", string=):
+    # if Utils.checkStartWithString(start= "where", string=predictedText) :
+    #     # if Utils.checkStartWithString(start="", string=):
+    #     #This will only render a text in the input form on the front end side. Nothing else.
+    #     socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": predictedText})))
+
+    #     # This will generate the answer and then automatically render to the text box on the front end side.
+    #     chatBot.ask(str(predictedText))
+    if Utils.checkStartWithString(start="play", string=predictedText):
+        #This will only render a text in the input form on the front end side. Nothing else.
+        socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len("play"):]})))
+        queryYoutubeVidIdAndSendToFrontEnd(predictedText[len("play"):])
+    else:
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": predictedText})))
 
         # This will generate the answer and then automatically render to the text box on the front end side.
         chatBot.ask(str(predictedText))
-    if Utils.checkStartWithString(start="play", string=predictedText):
-        #This will only render a text in the input form on the front end side. Nothing else.
-        socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len("play"):]})))
-        queryYoutubeVidIdAndSendToFrontEnd(predictedText[len("play"):])
-        
+
 
 # This function is the callback when the chat bot module finished its works. 
 # chatBotAnswer is out in the form of string.
@@ -118,7 +125,8 @@ def talk(msg):
     speechToText = SpeechToText(onReceiveSpeechToText)
     if (msg["userWantToTak"]) and  (not speechToText.isRunning()):
         print(msg["userWantToTak"])
-        speechToText.start()
+        with mutex:
+            speechToText.start()
         
 @socket.on('message')
 def onSongChange(msg):
