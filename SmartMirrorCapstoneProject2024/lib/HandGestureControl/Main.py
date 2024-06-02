@@ -13,6 +13,8 @@ class HandGesture:
         self.previousSongCommand = previousSongCommand
         self.stopFlag = False
         self.isRealsenseCamera = isRealsenseCamera
+        self.curCmd = "firstCurCmd"
+        self.preCmd = "firstPreCmd"
     def setStop(self):
         self.stopFlag = True
     def run(self):
@@ -133,12 +135,18 @@ class HandGesture:
                         #print('up')
                         #time.sleep(0.1)
                             putText(mode = 'U', loc=(200, 455), color = (0, 255, 0))
+                            self.curCmd = "nextCmd"
+                            if (self.curCmd == self.preCmd):
+                                continue
                             self.nextSongCommand()
 
                         if fingers == [0,1,1,0,0]:
                             #print('down')
                         #  time.sleep(0.1)
                             putText(mode = 'D', loc =  (200, 455), color = (0, 0, 255))
+                            self.curCmd = "preCmd"
+                            if (self.curCmd == self.preCmd):
+                                continue
                             self.previousSongCommand()
                         elif fingers == [0, 0, 0, 0, 0]:
                             active = 0
@@ -208,7 +216,13 @@ class HandGesture:
                         if len(lmList) != 0:
                             if fingers[0] == 0:
                                 cv2.circle(img, (lmList[4][1], lmList[4][2]), 10, (0, 0, 255), cv2.FILLED)  # thumb
+                                self.curCmd = "playAndPauseCmd"
+                                if (self.curCmd == self.preCmd):
+                                    continue
                                 self.playAndPauseCommand()
+
+                self.preCmd = self.curCmd
+                self.curCmd = "noCmd"
                 cTime = time.time()
                 fps = 1/((cTime + 0.01)-pTime)
                 pTime = cTime

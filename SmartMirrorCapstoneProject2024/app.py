@@ -78,7 +78,7 @@ class MusicController:
         else:
             socket.send("play")
             MusicController.playOrPause = True
-        sleep(MusicController.debounceTime)
+        # sleep(MusicController.debounceTime)
     @staticmethod
     def nextSong():
         if MusicController.currentSongIndex < len(return_dict()):
@@ -89,7 +89,7 @@ class MusicController:
         socket.emit( 'message', json.loads(x))
         
         
-        sleep(MusicController.debounceTime)
+        # sleep(MusicController.debounceTime)
     
     @staticmethod
     def previousSong():
@@ -98,7 +98,7 @@ class MusicController:
             x =  '''{ "type":"changeSong", "songId":"''' + str(MusicController.currentSongIndex) + '''"}'''
             socket.emit( 'message', json.loads(x))
             
-        sleep(MusicController.debounceTime)
+        # sleep(MusicController.debounceTime)
     @staticmethod
     def updateSongMetadata():
         socket.emit( 'updateMetaData', json.loads(json.dumps(return_dict()[MusicController.currentSongIndex -1])) )    
