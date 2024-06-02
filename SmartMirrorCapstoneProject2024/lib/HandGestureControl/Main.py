@@ -3,6 +3,7 @@ import time,  math, numpy as np
 from . import HandTrackingModule as htm
 # import pyautogui, autopy
 from ctypes import cast, POINTER
+import os
 # from comtypes import CLSCTX_ALL
 # from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
@@ -51,8 +52,8 @@ class HandGesture:
         # volume = interface.QueryInterface(IAudioEndpointVolume)
         # volRange = volume.GetVolumeRange()   #(-63.5, 0.0, 0.5) min max
 
-        minVol = -63
-        # maxVol = volRange[1]
+        minVol = 0
+        maxVol = 100
         # print(volRange)
         hmin = 50
         hmax = 200
@@ -177,23 +178,13 @@ class HandGesture:
                                 # print(length)
 
                                 # hand Range 50-300
-                                # Volume Range -65 - 0
-                            #     vol = np.interp(length, [hmin, hmax], [minVol, maxVol])
-                            #     volBar = np.interp(vol, [minVol, maxVol], [400, 150])
-                            #     volPer = np.interp(vol, [minVol, maxVol], [0, 100])
-                            #     print(vol)
-                            #     volN = int(vol)
-                            #     if volN % 4 != 0:
-                            #         volN = volN - volN % 4
-                            #         if volN >= 0:
-                            #             volN = 0
-                            #         elif volN <= -64:
-                            #             volN = -64
-                            #         elif vol >= -11:
-                            #             volN = vol
+                                # Volume Range 0-100
+                                vol = np.interp(length, [hmin, hmax], [minVol, maxVol])
+                                volBar = np.interp(vol, [minVol, maxVol], [400, 150])
+                                volPer = np.interp(vol, [minVol, maxVol], [0, 100])
+                                print(vol)
+                                os.system("amixer -D pulse sset Master " + str(int(vol)) + "%")
 
-                            # #    print(int(length), volN)
-                            #     volume.SetMasterVolumeLevel(vol, None)
                                 if length < 50:
                                     cv2.circle(img, (cx, cy), 11, (0, 0, 255), cv2.FILLED)
 
