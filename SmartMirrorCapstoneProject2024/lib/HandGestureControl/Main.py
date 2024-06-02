@@ -22,7 +22,8 @@ class HandGesture:
             pipeline_1 = rs.pipeline()
             # Configure streams Cam 1
             config_1 = rs.config()
-            config_1.enable_device('046122251324')
+            deviceId = rs.context().devices[0].get_info(rs.camera_info.serial_number)
+            config_1.enable_device(deviceId)
             config_1.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
             # Start streaming Cam 1
