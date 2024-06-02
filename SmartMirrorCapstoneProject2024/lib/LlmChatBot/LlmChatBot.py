@@ -1,4 +1,7 @@
-from openai import OpenAI
+import sys
+sys.path.insert(0, "/home/kinh/DoAn/SmartMirrorCapstoneProject2024/openai-python/src/")
+print(sys.path)
+from  openai import OpenAI
 from os import getenv
 
 # gets API Key from environment variable OPENAI_API_KEY
@@ -23,10 +26,10 @@ class AskChatBot:
         ],
         )
         self.notifier(str(completion.choices[0].message.content))
-# if __name__== "__main__":
-#     a = AskChatBot()
-#     def b(msg):
-#         print(msg)
-#     a.setNotifier(b)
-#     a.ask(" how many legs does an ant have")
+if __name__== "__main__":
+    a = AskChatBot()
+    def b(msg):
+        print(msg)
+    a.setNotifier(b)
+    a.ask(" how many legs does an ant have")
 
