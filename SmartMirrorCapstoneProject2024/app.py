@@ -5,7 +5,7 @@ from time import sleep
 import threading
 from lib.HandGestureControl import Main
 import json
-# from lib.LlmChatBot.LlmChatBot import AskChatBot
+from lib.LlmChatBot.LlmChatBot import AskChatBot
 from lib.SpeechToTextModule.SpeechToTextModule import SpeechToText
 from lib.Utils import Utils
 
@@ -55,8 +55,8 @@ def onReceiveSpeechToText(predictedText):
 # chatBotAnswer is out in the form of string.
 def notifier(chatBotAnswer):
     socket.emit("chatBotAnswer", json.loads(json.dumps({ "answer": chatBotAnswer})))
-# chatBot = AskChatBot()
-# chatBot.setNotifier(notifier)
+chatBot = AskChatBot()
+chatBot.setNotifier(notifier)
 
 
 
@@ -161,10 +161,10 @@ def queryYoutubeVidIdAndSendToFrontEnd(music_name):
 
     
 
-# @socket.on('askAQuestion')
-# def onAskChatBot(msg):
-#     question = msg["askChatBot"]
-#     chatBot.ask(str(question))
+@socket.on('askAQuestion')
+def onAskChatBot(msg):
+    question = msg["askChatBot"]
+    chatBot.ask(str(question))
 
 if __name__ == "__main__":
     app.run(host="localhost", port=5000)
