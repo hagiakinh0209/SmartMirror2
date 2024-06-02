@@ -7,23 +7,40 @@ from ctypes import cast, POINTER
 # from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 class HandGesture:
-    def __init__(self, playAndPauseCommand, nextSongCommand, previousSongCommand):
+    def __init__(self, playAndPauseCommand, nextSongCommand, previousSongCommand, isRealsenseCamera = False):
         self.playAndPauseCommand = playAndPauseCommand
         self.nextSongCommand = nextSongCommand
         self.previousSongCommand = previousSongCommand
         self.stopFlag = False
+        self.isRealsenseCamera = isRealsenseCamera
     def setStop(self):
         self.stopFlag = True
     def run(self):
+        if self.isRealsenseCamera :
+            import pyrealsense2 as rs
+            #Create a context object. This object owns the handles to all connected realsense devices
+            pipeline_1 = rs.pipeline()
+            # Configure streams Cam 1
+            config_1 = rs.config()
+            config_1.enable_device('046122251324')
+            config_1.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
-        wCam, hCam = 640, 480
-        cap = cv2.VideoCapture(0)
-        cap.set(3,wCam)
-        cap.set(4,hCam)
+            # Start streaming Cam 1
+            pipeline_1.start(config_1)
+
+            align_to_1 = rs.stream.color
+            align_1 = rs.align(align_to_1)
+
+        
+        else:
+            wCam, hCam = 640, 480
+            cap = cv2.VideoCapture(0)
+            cap.set(3,wCam)
+            cap.set(4,hCam)
         pTime = 0
         #cTime = 0
 
-        detector = htm.handDetector(maxHands=1, detectionCon=0.85, trackCon=0.8)
+        detector = htm.handDetector()
 
         # devices = AudioUtilities.GetSpeakers()
         # interface = devices.Activate(
@@ -50,7 +67,21 @@ class HandGesture:
                 self.stopFlag = False
                 break
             try:
-                success, img = cap.read()
+                if self.isRealsenseCamera:
+                    # Wait for a coherent pair of frames: depth and color
+                    frames_1 = pipeline_1.wait_for_frames()
+                    # Align the depth frame to color frame
+                    aligned_frames_1 = align_1.process(frames_1)
+                    # Get aligned frames
+                    # aligned_depth_frame_1 = aligned_frames_1.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+                    color_frame_1 = aligned_frames_1.get_color_frame()
+                    if not color_frame_1:
+                        continue
+                    img = np.asanyarray(color_frame_1.get_data())
+
+            
+                else:
+                    success, img = cap.read()
                 img = detector.findHands(img)
                 lmList = detector.findPosition(img, draw=False)
             # print(lmList)
