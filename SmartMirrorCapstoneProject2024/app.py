@@ -8,6 +8,8 @@ import json
 from lib.LlmChatBot.LlmChatBot import AskChatBot
 from lib.SpeechToTextModule.SpeechToTextModule import SpeechToText
 from lib.Utils import Utils
+from model.YoutubeVidModel import YoutubeVidList, YoutubeVid
+
 
 #Debug logger
 import logging 
@@ -22,6 +24,8 @@ ch.setFormatter(formatter)
 root.addHandler(ch)
 
 mutex = threading.Lock()
+
+youtubeVidList = YoutubeVidList()
 
 # Initialize Flask.
 app = Flask(__name__)
@@ -67,7 +71,6 @@ def return_dict():
 class MusicController:
     playOrPause = False
     currentSongIndex=1
-    debounceTime = 0.3
 
     @staticmethod
     def playAndPause():
@@ -78,31 +81,27 @@ class MusicController:
         else:
             socket.send("play")
             MusicController.playOrPause = True
-        # sleep(MusicController.debounceTime)
     @staticmethod
     def nextSong():
-        if MusicController.currentSongIndex < len(return_dict()):
+        if MusicController.currentSongIndex < youtubeVidList.getSize():
             MusicController.currentSongIndex = MusicController.currentSongIndex + 1
         else :
             MusicController.currentSongIndex = 1
-        x =  '''{ "type":"changeSong", "songId":"''' + str(MusicController.currentSongIndex) + '''"}'''
-        socket.emit( 'message', json.loads(x))
+        socket.emit("youtubeSongUrl", json.loads(json.dumps({"youtubeSongUrl" : youtubeVidList.getYoutubeSongUrl(MusicController.currentSongIndex), "yt_title" : youtubeVidList.getYoutubetTitle(MusicController.currentSongIndex)})))
         
         
-        # sleep(MusicController.debounceTime)
+        
     
     @staticmethod
     def previousSong():
         if MusicController.currentSongIndex > 1:
             MusicController.currentSongIndex = MusicController.currentSongIndex - 1
-            x =  '''{ "type":"changeSong", "songId":"''' + str(MusicController.currentSongIndex) + '''"}'''
-            socket.emit( 'message', json.loads(x))
+            socket.emit("youtubeSongUrl", json.loads(json.dumps({"youtubeSongUrl" : youtubeVidList.getYoutubeSongUrl(MusicController.currentSongIndex), "yt_title" : youtubeVidList.getYoutubetTitle(MusicController.currentSongIndex)})))
             
-        # sleep(MusicController.debounceTime)
+            
     @staticmethod
     def updateSongMetadata():
         socket.emit( 'updateMetaData', json.loads(json.dumps(return_dict()[MusicController.currentSongIndex -1])) )    
-        # socket.send("asdnajsdk")
 
 
 
@@ -116,9 +115,10 @@ def show_entries():
 @socket.on('connect')
 def on_connect(msg):
     print('Server received connection')
-    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, True)
+    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, False)
     handGestureThread = threading.Thread(target=mHandGesture.run)
     handGestureThread.start()
+    queryYoutubeVidIdAndSendToFrontEnd("most viral songs")
 
 @socket.on("userWantToTak")
 def talk(msg):
@@ -146,19 +146,22 @@ def queryYoutubeVidIdAndSendToFrontEnd(music_name):
     formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
 
     search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
-    clip = requests.get("https://www.youtube.com/watch?v=" + "{}".format(search_results[0]))
-    clip2 = "https://www.youtube.com/watch?v=" + "{}".format(search_results[0])
+    youtubeVidsize = len(search_results) if  len(search_results)<= 10 else 10
+    for i in range(youtubeVidsize):
 
-    inspect = BeautifulSoup(clip.content, "html.parser")
-    yt_title = inspect.find_all("meta", property="og:title")
-    def parseYoutubeURL( url:str)->str:
-        data = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
-        if data:
-            return data[0]
-        return ""
+        clip = requests.get("https://www.youtube.com/watch?v=" + "{}".format(search_results[i]))
+        clip2 = "https://www.youtube.com/watch?v=" + "{}".format(search_results[i])
 
-    socket.emit("youtubeSongUrl", json.loads(json.dumps({"youtubeSongUrl" : parseYoutubeURL(clip2), "yt_title" : yt_title[0]['content']})))
-
+        inspect = BeautifulSoup(clip.content, "html.parser")
+        yt_title = inspect.find_all("meta", property="og:title")
+        def parseYoutubeURL( url:str)->str:
+            data = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
+            if data:
+                return data[0]
+            return ""
+        if i == 0:
+            socket.emit("youtubeSongUrl", json.loads(json.dumps({"youtubeSongUrl" : parseYoutubeURL(clip2), "yt_title" : yt_title[0]['content']})))
+        youtubeVidList.addYoutubeVidMetadata(YoutubeVid(parseYoutubeURL(clip2), yt_title[0]['content']))
     
 
 @socket.on('askAQuestion')
