@@ -1,14 +1,6 @@
-import sys
-sys.path.insert(0, "/home/kinh/DoAn/SmartMirrorCapstoneProject2024/openai-python/src/")
-print(sys.path)
-from  openai import OpenAI
-from os import getenv
-
-# gets API Key from environment variable OPENAI_API_KEY
-client = OpenAI(
-  base_url="https://openrouter.ai/api/v1",
-  api_key="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",
-)
+import subprocess
+import json
+api_key="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"
 
 class AskChatBot:
     def __init__(self) -> None:
@@ -16,16 +8,17 @@ class AskChatBot:
     def setNotifier(self, notifier):
         self.notifier = notifier
     def ask(self, msg):
-        completion = client.chat.completions.create(
-        model="google/gemma-7b-it:free",
-        messages=[
-            {
-            "role": "user",
-            "content": ""+ str(msg),
-            },
-        ],
-        )
-        self.notifier(str(completion.choices[0].message.content))
+        cmd = '''curl https://openrouter.ai/api/v1/chat/completions \\
+                -H "Content-Type: application/json" \\
+                -H "Authorization: Bearer ''' + api_key + '''" \\
+                -d \'{
+                "model": "google/gemma-7b-it:free",
+                "messages": [
+                    {"role": "user", "content": "''' + msg + '''"}
+                ]
+                }\''''
+        output = subprocess.check_output(cmd, shell=True)       
+        self.notifier(json.loads(output.decode("utf-8"))["choices"][0]["message"]["content"])
 if __name__== "__main__":
     a = AskChatBot()
     def b(msg):
