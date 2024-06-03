@@ -8,7 +8,10 @@ class handDetector():
        
 
         self.mpHands = mp.solutions.hands
-        self.hands = self.mpHands.Hands()
+        self.hands = self.mpHands.Hands(static_image_mode=False,
+                                        max_num_hands=1,
+                                        min_detection_confidence=0.85,
+                                        min_tracking_confidence=0.85)
         self.mpDraw = mp.solutions.drawing_utils
 
     def findHands(self, img, draw=True):
