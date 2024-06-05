@@ -9,6 +9,7 @@ from lib.LlmChatBot.LlmChatBot import AskChatBot
 from lib.SpeechToTextModule.SpeechToTextModule import SpeechToText
 from lib.Utils import Utils
 from model.YoutubeVidModel import YoutubeVidList, YoutubeVid
+from pynput.keyboard import Listener, KeyCode
 
 
 #Debug logger
@@ -115,18 +116,21 @@ def show_entries():
 @socket.on('connect')
 def on_connect(msg):
     print('Server received connection')
-    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, False)
+    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, True)
     handGestureThread = threading.Thread(target=mHandGesture.run)
     handGestureThread.start()
     queryYoutubeVidIdAndSendToFrontEnd("most viral songs")
 
-@socket.on("userWantToTak")
-def talk(msg):
+def onTalk():
     speechToText = SpeechToText(onReceiveSpeechToText)
-    if (msg["userWantToTak"]) and  (not speechToText.isRunning()):
-        print(msg["userWantToTak"])
+    if (not speechToText.isRunning()):
         with mutex:
             speechToText.start()
+
+# Collect all event until released
+with Listener(on_press = onTalk) as listener: 
+	listener.join()
+
         
 @socket.on('message')
 def onSongChange(msg):
