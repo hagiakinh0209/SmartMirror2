@@ -107,9 +107,8 @@ class MusicController:
 
 def onTalk(key):
     if (key == KeyCode(char="c")) and (not speechToText.isRunning()):
-        print("we got key {0}", key)
-        with mutex:
-            speechToText.start()
+        print("we got key " + str(key))
+        speechToText.start()
 
 
 #Route to render GUI
@@ -170,8 +169,10 @@ def onAskChatBot(msg):
     chatBot.ask(str(question))
 
 if __name__ == "__main__":
-    with Listener(on_press = onTalk) as listener: 
-    	listener.join()
+    listener = Listener(on_press = onTalk)  
+    listener.start()
+    print(" Start listener to listen to c press")
+        
 
     app.run(host="localhost", port=5000)
     socket.run(app)

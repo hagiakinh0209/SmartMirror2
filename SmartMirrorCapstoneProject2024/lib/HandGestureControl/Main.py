@@ -161,7 +161,11 @@ class HandGesture:
                         if fingers[-1] == 1:
                             active = 0
                             mode = 'N'
-                            print(mode)
+                        
+#     if (key == KeyCode(char="c")) and (not speechToText.isRunning()):
+#         print("we got key " + key)
+#         speechToText.start()
+                    # print(mode)
 
                         else:
 
