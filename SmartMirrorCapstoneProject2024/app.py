@@ -9,6 +9,7 @@ from lib.LlmChatBot.LlmChatBot import AskChatBot
 from lib.SpeechToTextModule.SpeechToTextModule import SpeechToText
 from lib.Utils import Utils
 from model.YoutubeVidModel import YoutubeVidList, YoutubeVid
+from pynput.keyboard import Listener, KeyCode
 
 
 #Debug logger
@@ -53,6 +54,7 @@ def onReceiveSpeechToText(predictedText):
 
         # This will generate the answer and then automatically render to the text box on the front end side.
         # chatBot.ask(str(predictedText))
+speechToText = SpeechToText(onReceiveSpeechToText)
 
 
 # This function is the callback when the chat bot module finished its works. 
@@ -103,6 +105,11 @@ class MusicController:
     def updateSongMetadata():
         socket.emit( 'updateMetaData', json.loads(json.dumps(return_dict()[MusicController.currentSongIndex -1])) )    
 
+def onTalk(key):
+    if (key == KeyCode(char="c")) and (not speechToText.isRunning()):
+        print("we got key {0}", key)
+        with mutex:
+            speechToText.start()
 
 
 #Route to render GUI
@@ -120,13 +127,6 @@ def on_connect(msg):
     handGestureThread.start()
     queryYoutubeVidIdAndSendToFrontEnd("most viral songs")
 
-@socket.on("userWantToTak")
-def talk(msg):
-    speechToText = SpeechToText(onReceiveSpeechToText)
-    if (msg["userWantToTak"]) and  (not speechToText.isRunning()):
-        print(msg["userWantToTak"])
-        with mutex:
-            speechToText.start()
         
 @socket.on('message')
 def onSongChange(msg):
@@ -170,6 +170,9 @@ def onAskChatBot(msg):
     chatBot.ask(str(question))
 
 if __name__ == "__main__":
+    with Listener(on_press = onTalk) as listener: 
+    	listener.join()
+
     app.run(host="localhost", port=5000)
     socket.run(app)
     
