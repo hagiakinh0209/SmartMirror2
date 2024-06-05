@@ -125,6 +125,7 @@ def on_connect(msg):
 
 def onTalk(key):
     if (key == KeyCode(char="c")) and (not speechToText.isRunning()):
+        print("we got key {0}", key)
         with mutex:
             speechToText.start()
 
