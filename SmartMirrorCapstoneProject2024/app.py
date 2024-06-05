@@ -115,7 +115,7 @@ def show_entries():
 @socket.on('connect')
 def on_connect(msg):
     print('Server received connection')
-    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, False)
+    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, True)
     handGestureThread = threading.Thread(target=mHandGesture.run)
     handGestureThread.start()
     queryYoutubeVidIdAndSendToFrontEnd("most viral songs")
