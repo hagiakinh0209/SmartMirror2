@@ -54,6 +54,8 @@ def onReceiveSpeechToText(predictedText):
 
         # This will generate the answer and then automatically render to the text box on the front end side.
         # chatBot.ask(str(predictedText))
+speechToText = SpeechToText(onReceiveSpeechToText)
+
 
 
 # This function is the callback when the chat bot module finished its works. 
@@ -121,15 +123,11 @@ def on_connect(msg):
     handGestureThread.start()
     queryYoutubeVidIdAndSendToFrontEnd("most viral songs")
 
-def onTalk():
-    speechToText = SpeechToText(onReceiveSpeechToText)
-    if (not speechToText.isRunning()):
+def onTalk(key):
+    if (key == KeyCode(char="c")) and (not speechToText.isRunning()):
         with mutex:
             speechToText.start()
 
-# Collect all event until released
-with Listener(on_press = onTalk) as listener: 
-	listener.join()
 
         
 @socket.on('message')
@@ -176,4 +174,8 @@ def onAskChatBot(msg):
 if __name__ == "__main__":
     app.run(host="localhost", port=5000)
     socket.run(app)
+    
+    # Collect all event until released
+    with Listener(on_press = onTalk) as listener: 
+        listener.join()
     
