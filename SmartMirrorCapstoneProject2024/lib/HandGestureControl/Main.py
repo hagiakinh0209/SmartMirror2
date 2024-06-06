@@ -42,19 +42,12 @@ class HandGesture:
             cap.set(3,wCam)
             cap.set(4,hCam)
         pTime = 0
-        #cTime = 0
 
         detector = htm.handDetector()
 
-        # devices = AudioUtilities.GetSpeakers()
-        # interface = devices.Activate(
-        #     IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        # volume = interface.QueryInterface(IAudioEndpointVolume)
-        # volRange = volume.GetVolumeRange()   #(-63.5, 0.0, 0.5) min max
 
         minVol = 0
         maxVol = 100
-        # print(volRange)
         hmin = 50
         hmax = 200
         volBar = 400
@@ -88,7 +81,6 @@ class HandGesture:
                     success, img = cap.read()
                 img = detector.findHands(img)
                 lmList = detector.findPosition(img, draw=False)
-            # print(lmList)
                 fingers = []
 
                 if len(lmList) != 0:
@@ -116,7 +108,7 @@ class HandGesture:
                     if (fingers == [0,0,0,0,0]) & (active == 0 ):
                         mode='N'
                     elif (fingers == [0, 1, 0, 0, 0] or fingers == [0, 1, 1, 0, 0]) & (active == 0 ):
-                        mode = 'Scroll'
+                        mode = 'NextOrPrev'
                         active = 1
                     elif (fingers == [1, 1, 0, 0, 0] ) & (active == 0 ):
                         mode = 'Volume'
@@ -125,8 +117,8 @@ class HandGesture:
                         mode = 'playAndPause'
                         active = 1
 
-            ############# Scroll 👇👇👇👇##############
-                if mode == 'Scroll':
+            ############# NextOrPrev 👇👇👇👇##############
+                if mode == 'NextOrPrev':
                     active = 1
                 #   print(mode)
                     putText(mode)
@@ -135,7 +127,7 @@ class HandGesture:
                         if fingers == [0,1,0,0,0]:
                         #print('up')
                         #time.sleep(0.1)
-                            putText(mode = 'U', loc=(200, 455), color = (0, 255, 0))
+                            putText(mode = 'N', loc=(200, 455), color = (0, 255, 0))
                             self.curCmd = "nextCmd"
                             if (self.curCmd == self.preCmd):
                                 continue
@@ -144,7 +136,7 @@ class HandGesture:
                         if fingers == [0,1,1,0,0]:
                             #print('down')
                         #  time.sleep(0.1)
-                            putText(mode = 'D', loc =  (200, 455), color = (0, 0, 255))
+                            putText(mode = 'P', loc =  (200, 455), color = (0, 0, 255))
                             self.curCmd = "preCmd"
                             if (self.curCmd == self.preCmd):
                                 continue
@@ -162,39 +154,34 @@ class HandGesture:
                             active = 0
                             mode = 'N'
                         
-#     if (key == KeyCode(char="c")) and (not speechToText.isRunning()):
-#         print("we got key " + key)
-#         speechToText.start()
-                    # print(mode)
 
                         else:
 
-                            #   print(lmList[4], lmList[8])
-                                x1, y1 = lmList[4][1], lmList[4][2]
-                                x2, y2 = lmList[8][1], lmList[8][2]
-                                cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
-                                cv2.circle(img, (x1, y1), 10, color, cv2.FILLED)
-                                cv2.circle(img, (x2, y2), 10, color, cv2.FILLED)
-                                cv2.line(img, (x1, y1), (x2, y2), color, 3)
-                                cv2.circle(img, (cx, cy), 8, color, cv2.FILLED)
+                            x1, y1 = lmList[4][1], lmList[4][2]
+                            x2, y2 = lmList[8][1], lmList[8][2]
+                            cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+                            cv2.circle(img, (x1, y1), 10, color, cv2.FILLED)
+                            cv2.circle(img, (x2, y2), 10, color, cv2.FILLED)
+                            cv2.line(img, (x1, y1), (x2, y2), color, 3)
+                            cv2.circle(img, (cx, cy), 8, color, cv2.FILLED)
 
-                                length = math.hypot(x2 - x1, y2 - y1)
-                                # print(length)
+                            length = math.hypot(x2 - x1, y2 - y1)
+                            # print(length)
 
-                                # hand Range 50-300
-                                # Volume Range 0-100
-                                vol = np.interp(length, [hmin, hmax], [minVol, maxVol])
-                                volBar = np.interp(vol, [minVol, maxVol], [400, 150])
-                                volPer = np.interp(vol, [minVol, maxVol], [0, 100])
-                                print(vol)
-                                os.system("amixer -D pulse sset Master " + str(int(vol)) + "%")
+                            # hand Range 50-300
+                            # Volume Range 0-100
+                            vol = np.interp(length, [hmin, hmax], [minVol, maxVol])
+                            volBar = np.interp(vol, [minVol, maxVol], [400, 150])
+                            volPer = np.interp(vol, [minVol, maxVol], [0, 100])
+                            vol = vol if vol >=30 else 30
+                            os.system("amixer -D pulse sset Master " + str(int(vol)) + "%")
 
-                                if length < 50:
-                                    cv2.circle(img, (cx, cy), 11, (0, 0, 255), cv2.FILLED)
+                            if length < 50:
+                                cv2.circle(img, (cx, cy), 11, (0, 0, 255), cv2.FILLED)
 
-                                cv2.rectangle(img, (30, 150), (55, 400), (209, 206, 0), 3)
-                                cv2.rectangle(img, (30, int(volBar)), (55, 400), (215, 255, 127), cv2.FILLED)
-                                cv2.putText(img, f'{int(volPer)}%', (25, 430), cv2.FONT_HERSHEY_COMPLEX, 0.9, (209, 206, 0), 3)
+                            cv2.rectangle(img, (30, 150), (55, 400), (209, 206, 0), 3)
+                            cv2.rectangle(img, (30, int(volBar)), (55, 400), (215, 255, 127), cv2.FILLED)
+                            cv2.putText(img, f'{int(volPer)}%', (25, 430), cv2.FONT_HERSHEY_COMPLEX, 0.9, (209, 206, 0), 3)
 
 
             #######################################################################

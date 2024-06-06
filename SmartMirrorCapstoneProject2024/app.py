@@ -1,7 +1,6 @@
 from flask import Flask,render_template
 import sys
 from flask_socketio import SocketIO
-from time import sleep
 import threading
 from lib.HandGestureControl import Main
 import json
@@ -13,50 +12,21 @@ from pynput.keyboard import Listener, KeyCode
 
 # reactive python module
 import multiprocessing
-import random
 import rx
 from rx.scheduler import ThreadPoolScheduler
 from rx import operators as ops
 
-
-# calculate cpu count, using which will create a ThreadPoolScheduler
-thread_count = multiprocessing.cpu_count()
-thread_pool_scheduler = ThreadPoolScheduler(thread_count)
-isFetching = False
-fetchingYoutubeVidDisposable =  None
-
 #Debug logger
 import logging 
-root = logging.getLogger()
-root.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-root.addHandler(ch)
-
-mutex = threading.Lock()
-
-youtubeVidList = YoutubeVidList()
 
 # Initialize Flask.
 app = Flask(__name__)
 socket = SocketIO(app)
 
+
 # This function is the callback when the speech to text module finished transcibing. 
 # predictedText is the output if speech to text module.
 def onReceiveSpeechToText(predictedText):
-    print(predictedText)
-    # change "start =" later
-    # if Utils.checkStartWithString(start= "where", string=predictedText) :
-    #     # if Utils.checkStartWithString(start="", string=):
-    #     #This will only render a text in the input form on the front end side. Nothing else.
-    #     socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": predictedText})))
-
-    #     # This will generate the answer and then automatically render to the text box on the front end side.
-    #     chatBot.ask(str(predictedText))
     if Utils.checkStartWithString(start="play", string=predictedText):
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len("play"):]})))
@@ -65,23 +35,17 @@ def onReceiveSpeechToText(predictedText):
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": predictedText})))
 
-        # This will generate the answer and then automatically render to the text box on the front end side.
-        # chatBot.ask(str(predictedText))
-speechToText = SpeechToText(onReceiveSpeechToText)
 
 
 # This function is the callback when the chat bot module finished its works. 
 # chatBotAnswer is out in the form of string.
 def notifier(chatBotAnswer):
     socket.emit("chatBotAnswer", json.loads(json.dumps({ "answer": chatBotAnswer})))
-chatBot = AskChatBot()
-chatBot.setNotifier(notifier)
 
 
 
 def return_dict():
-    dict_here = []
-    return dict_here
+    return []
 
 class MusicController:
     playOrPause = False
@@ -206,10 +170,36 @@ def onAskChatBot(msg):
     chatBot.ask(str(question))
 
 if __name__ == "__main__":
+    
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
+    speechToText = SpeechToText(onReceiveSpeechToText)
+
+
     listener = Listener(on_press = onTalk)  
     listener.start()
     print(" Start listener to listen to c press")
         
+    youtubeVidList = YoutubeVidList()
+
+    # calculate cpu count, using which will create a ThreadPoolScheduler
+    thread_count = multiprocessing.cpu_count()
+    thread_pool_scheduler = ThreadPoolScheduler(thread_count)
+    
+    isFetching = False
+    fetchingYoutubeVidDisposable =  None
+
+    chatBot = AskChatBot()
+    chatBot.setNotifier(notifier)
+
 
     app.run(host="localhost", port=5000)
     socket.run(app)
