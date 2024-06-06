@@ -15,7 +15,6 @@
 
 <body>
     <div class="container-fluid">
-        <button onclick="talk()">talk</button>
         <div class="dateTime">
             <form onsubmit="submitSearchForYoutubeVid(event)" id = "searchForYoutubeVidForm">
                 <input type="text" name="song" id = "searchYoutubeVidEditText">
@@ -133,10 +132,6 @@
                 document.getElementById("chatBotLoadingImage").style.display = "none"
 
             })
-            function talk(){
-                console.log("talk");
-                socket.emit("userWantToTak", {userWantToTak : true})
-            }
             socket.on("speechToTextOutPut_chatbot", function(msg){
                 console.log(msg.speechToTextOutPut_chatbot);
                 document.getElementById("chatBotEditText").value = msg.speechToTextOutPut_chatbot
