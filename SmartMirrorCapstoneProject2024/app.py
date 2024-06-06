@@ -11,6 +11,19 @@ from lib.Utils import Utils
 from model.YoutubeVidModel import YoutubeVidList, YoutubeVid
 from pynput.keyboard import Listener, KeyCode
 
+# reactive python module
+import multiprocessing
+import random
+import rx
+from rx.scheduler import ThreadPoolScheduler
+from rx import operators as ops
+
+
+# calculate cpu count, using which will create a ThreadPoolScheduler
+thread_count = multiprocessing.cpu_count()
+thread_pool_scheduler = ThreadPoolScheduler(thread_count)
+isFetching = False
+fetchingYoutubeVidDisposable =  None
 
 #Debug logger
 import logging 
@@ -146,8 +159,7 @@ def queryYoutubeVidIdAndSendToFrontEnd(music_name):
 
     search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
     youtubeVidsize = len(search_results) if  len(search_results)<= 10 else 10
-    for i in range(youtubeVidsize):
-
+    def fetchingSingleYoutubeVid(i):
         clip = requests.get("https://www.youtube.com/watch?v=" + "{}".format(search_results[i]))
         clip2 = "https://www.youtube.com/watch?v=" + "{}".format(search_results[i])
 
@@ -161,6 +173,31 @@ def queryYoutubeVidIdAndSendToFrontEnd(music_name):
         if i == 0:
             socket.emit("youtubeSongUrl", json.loads(json.dumps({"youtubeSongUrl" : parseYoutubeURL(clip2), "yt_title" : yt_title[0]['content']})))
         youtubeVidList.addYoutubeVidMetadata(YoutubeVid(parseYoutubeURL(clip2), yt_title[0]['content']))
+        print(youtubeVidList.getYoutubeVidList())
+    def on_subscribe():
+        isFetching = True
+        print("start fetching youtube vid")
+    def on_error(e):
+        isFetching = False
+        print("error :" + str(e))
+    def on_completed():
+        isFetching = False
+        print("fetching complete")
+    
+    youtubeVidList.clearYoutubeVidList()
+    
+    if isFetching and (fetchingYoutubeVidDisposable != None):
+        fetchingYoutubeVidDisposable.dispose()
+        print("dispose! fetching youtube vids")
+    fetchingYoutubeVidDisposable = rx.range(youtubeVidsize).pipe(
+        ops.do_action(lambda i : fetchingSingleYoutubeVid(i)),
+        ops.subscribe_on(thread_pool_scheduler)
+        ).subscribe(
+        on_error=on_error,
+        on_completed=on_completed
+    )
+    on_subscribe()
+
     
 
 @socket.on('askAQuestion')

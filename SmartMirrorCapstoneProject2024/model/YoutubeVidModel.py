@@ -23,6 +23,8 @@ class YoutubeVidList :
         return len(self.youtubeVidList)
     def getYoutubeVidList(self):
         return self.youtubeVidList
+    def clearYoutubeVidList(self):
+        self.youtubeVidList = []
 
 
 if __name__ == "__main__":
