@@ -1,12 +1,7 @@
 import cv2
 import time,  math, numpy as np
 from . import HandTrackingModule as htm
-# import pyautogui, autopy
-from ctypes import cast, POINTER
 import os
-# from comtypes import CLSCTX_ALL
-# from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-
 class HandGesture:
     def __init__(self, playAndPauseCommand, nextSongCommand, previousSongCommand, isRealsenseCamera = False):
         self.playAndPauseCommand = playAndPauseCommand
@@ -21,19 +16,50 @@ class HandGesture:
     def run(self):
         if self.isRealsenseCamera :
             import pyrealsense2 as rs
-            #Create a context object. This object owns the handles to all connected realsense devices
-            pipeline_1 = rs.pipeline()
-            # Configure streams Cam 1
-            config_1 = rs.config()
-            deviceId = rs.context().devices[0].get_info(rs.camera_info.serial_number)
-            config_1.enable_device(deviceId)
-            config_1.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+            # Create a pipeline
+            pipeline = rs.pipeline()
 
-            # Start streaming Cam 1
-            pipeline_1.start(config_1)
+            # Create a config and configure the pipeline to stream
+            #  different resolutions of color and depth streams
+            config = rs.config()
 
-            align_to_1 = rs.stream.color
-            align_1 = rs.align(align_to_1)
+            # Get device product line for setting a supporting resolution
+            pipeline_wrapper = rs.pipeline_wrapper(pipeline)
+            pipeline_profile = config.resolve(pipeline_wrapper)
+            device = pipeline_profile.get_device()
+            device_product_line = str(device.get_info(rs.camera_info.product_line))
+
+            found_rgb = False
+            for s in device.sensors:
+                if s.get_info(rs.camera_info.name) == 'RGB Camera':
+                    found_rgb = True
+                    break
+            if not found_rgb:
+                print("The demo requires Depth camera with Color sensor")
+                exit(0)
+
+            config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+            config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+
+            # Start streaming
+            profile = pipeline.start(config)
+
+            # Getting the depth sensor's depth scale (see rs-align example for explanation)
+            depth_sensor = profile.get_device().first_depth_sensor()
+            depth_scale = depth_sensor.get_depth_scale()
+            print("Depth Scale is: " , depth_scale)
+
+            # We will be removing the background of objects more than
+            #  clipping_distance_in_meters meters away
+            clipping_distance_in_meters = 1 #1 meter
+            clipping_distance = clipping_distance_in_meters / depth_scale
+
+            # Create an align object
+            # rs.align allows us to perform alignment of depth frames to others frames
+            # The "align_to" is the stream type to which we plan to align depth frames.
+            align_to = rs.stream.color
+            align = rs.align(align_to)
+
 
         
         else:
@@ -65,16 +91,29 @@ class HandGesture:
                 break
             try:
                 if self.isRealsenseCamera:
-                    # Wait for a coherent pair of frames: depth and color
-                    frames_1 = pipeline_1.wait_for_frames()
+                    # Get frameset of color and depth
+                    frames = pipeline.wait_for_frames()
+                    # frames.get_depth_frame() is a 640x360 depth image
+
                     # Align the depth frame to color frame
-                    aligned_frames_1 = align_1.process(frames_1)
+                    aligned_frames = align.process(frames)
+
                     # Get aligned frames
-                    # aligned_depth_frame_1 = aligned_frames_1.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
-                    color_frame_1 = aligned_frames_1.get_color_frame()
-                    if not color_frame_1:
+                    aligned_depth_frame = aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+                    color_frame = aligned_frames.get_color_frame()
+
+                    # Validate that both frames are valid
+                    if not aligned_depth_frame or not color_frame:
                         continue
-                    img = np.asanyarray(color_frame_1.get_data())
+
+                    depth_image = np.asanyarray(aligned_depth_frame.get_data())
+                    color_image = np.asanyarray(color_frame.get_data())
+
+                    # Remove background - Set pixels further than clipping_distance to grey
+                    grey_color = 153
+                    depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
+                    # img is background removed image
+                    img = np.where((depth_image_3d > clipping_distance) | (depth_image_3d <= 0), grey_color, color_image)
 
             
                 else:
