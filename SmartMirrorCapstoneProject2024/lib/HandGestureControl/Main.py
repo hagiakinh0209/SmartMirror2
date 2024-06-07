@@ -11,6 +11,7 @@ class HandGesture:
         self.isRealsenseCamera = isRealsenseCamera
         self.curCmd = "firstCurCmd"
         self.preCmd = "firstPreCmd"
+        self.commandEnable = False
     def setStop(self):
         self.stopFlag = True
     def run(self):
@@ -38,8 +39,8 @@ class HandGesture:
                 print("The demo requires Depth camera with Color sensor")
                 exit(0)
 
-            config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-            config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+            config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 15)
+            config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 15)
 
             # Start streaming
             profile = pipeline.start(config)
@@ -84,7 +85,16 @@ class HandGesture:
         tipIds = [4, 8, 12, 16, 20]
         mode = ''
         active = 0
-
+        def computeAngle(lmList, pointA,pointB, pointC, horizon = False):
+            if (pointC != None) and (not horizon):
+                points = np.asarray([lmList[pointA][1:], lmList[pointB][1:], lmList[pointC][1:]])
+            else:
+                points = np.asarray([lmList[pointA][1:], lmList[pointB][1:], [100000, lmList[pointB][2]]])
+            d_ba = points[1] - points[0]
+            d_ca = points[2] - points[0]
+            cosineAngle = np.dot(d_ba, d_ca)   / (np.linalg.norm(d_ba)* np.linalg.norm(d_ca))             
+            angle = np.arccos(cosineAngle)
+            return angle
         while True:
             if(self.stopFlag):
                 self.stopFlag = False
@@ -121,6 +131,16 @@ class HandGesture:
                 img = detector.findHands(img)
                 lmList = detector.findPosition(img, draw=False)
                 fingers = []
+                # print(lmList)
+                if len(lmList)>0:
+                    angle5_0_17 = computeAngle(lmList, 0, 5, 17)*100
+                    angle9_0_horizon = computeAngle(lmList , 9, 0, None, True)*180/np.pi
+                    print(angle9_0_horizon)
+                    if angle5_0_17>55 and angle5_0_17 < 95 and angle9_0_horizon <120 and angle9_0_horizon>60:
+                        self.commandEnable = True
+                    else:
+                        self.commandEnable = False
+                
 
                 if len(lmList) != 0:
 
@@ -131,7 +151,7 @@ class HandGesture:
                         else:
                             fingers.append(0)
                     elif lmList[tipIds[0]][1] < lmList[tipIds[0 -1]][1]:
-                        if lmList[tipIds[0]][1] <= lmList[tipIds[0] - 1][1]:
+                        if lmList[tipIds[0]][1] <= lmList[tipIds[0] - 1][1]:    
                             fingers.append(1)
                         else:
                             fingers.append(0)
@@ -149,7 +169,7 @@ class HandGesture:
                     elif (fingers == [0, 1, 0, 0, 0] or fingers == [0, 1, 1, 0, 0]) & (active == 0 ):
                         mode = 'NextOrPrev'
                         active = 1
-                    elif (fingers == [1, 1, 0, 0, 0] ) & (active == 0 ):
+                    elif (fingers == [1, 1, 0, 0, 0] ) & (active == 0 ) & (lmList[12][2]>lmList[9][2]):
                         mode = 'Volume'
                         active = 1
                     elif (fingers == [1 ,1 , 1, 1, 1] ) & (active == 0 ):
@@ -170,7 +190,8 @@ class HandGesture:
                             self.curCmd = "nextCmd"
                             if (self.curCmd == self.preCmd):
                                 continue
-                            self.nextSongCommand()
+                            if self.commandEnable:
+                                self.nextSongCommand()
 
                         if fingers == [0,1,1,0,0]:
                             #print('down')
@@ -179,7 +200,8 @@ class HandGesture:
                             self.curCmd = "preCmd"
                             if (self.curCmd == self.preCmd):
                                 continue
-                            self.previousSongCommand()
+                            if self.commandEnable:
+                                self.previousSongCommand()
                         elif fingers == [0, 0, 0, 0, 0]:
                             active = 0
                             mode = 'N'
@@ -213,7 +235,8 @@ class HandGesture:
                             volBar = np.interp(vol, [minVol, maxVol], [400, 150])
                             volPer = np.interp(vol, [minVol, maxVol], [0, 100])
                             vol = vol if vol >=30 else 30
-                            os.system("amixer -D pulse sset Master " + str(int(vol)) + "%")
+                            if self.commandEnable:
+                                os.system("amixer -D pulse sset Master " + str(int(vol)) + "%")
 
                             if length < 50:
                                 cv2.circle(img, (cx, cy), 11, (0, 0, 255), cv2.FILLED)
@@ -240,7 +263,8 @@ class HandGesture:
                                 self.curCmd = "playAndPauseCmd"
                                 if (self.curCmd == self.preCmd):
                                     continue
-                                self.playAndPauseCommand()
+                                if self.commandEnable:
+                                    self.playAndPauseCommand()
 
                 self.preCmd = self.curCmd
                 self.curCmd = "noCmd"
@@ -249,6 +273,7 @@ class HandGesture:
                 pTime = cTime
 
                 cv2.putText(img,f'FPS:{int(fps)}',(480,50), cv2.FONT_ITALIC,1,(255,0,0),2)
+                # cv2.putText(img,f'angle:{int(angle5_0_17)}',(480,100), cv2.FONT_ITALIC,1,(255,0,0),2)
                 cv2.imshow('Hand LiveFeed',img)
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -258,8 +283,10 @@ class HandGesture:
                     cv2.putText(img, str(mode), loc, cv2.FONT_HERSHEY_COMPLEX_SMALL,
                                 3, color, 3)
             except:
+                import traceback
+                traceback.print_exc()
                 pass
-        print("destroy")
-        cap.release()
-        cv2.destroyAllWindows()
+        # print("destroy")
+        # cap.release()
+        # cv2.destroyAllWindows()
         
