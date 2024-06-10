@@ -60,7 +60,7 @@ class HandGesture:
                 if len(lmList)>0:
                     angle5_0_17 = computeAngle(lmList, 0, 5, 17)*100
                     angle9_0_horizon = computeAngle(lmList , 9, 0, None, True)*180/np.pi
-                    print(angle9_0_horizon)
+                    # print(angle9_0_horizon)
                     if angle5_0_17>55 and angle5_0_17 < 95 and angle9_0_horizon <120 and angle9_0_horizon>60:
                         self.commandEnable = True
                     else:
@@ -200,16 +200,16 @@ class HandGesture:
                 cv2.putText(img,f'FPS:{int(fps)}',(480,50), cv2.FONT_ITALIC,1,(255,0,0),2)
                 # cv2.putText(img,f'angle:{int(angle5_0_17)}',(480,100), cv2.FONT_ITALIC,1,(255,0,0),2)
                 cv2.imshow('Hand LiveFeed',img)
-
-                if cv2.waitKey(10) & 0xFF == ord('q'):
+                # 15fps means period is 67ms, according to Nyquist's criteria, the wait period should be 67/2 =33
+                if cv2.waitKey(33) & 0xFF == ord('q'):
                     break
 
                 def putText(mode,loc = (250, 450), color = (0, 255, 255)):
                     cv2.putText(img, str(mode), loc, cv2.FONT_HERSHEY_COMPLEX_SMALL,
                                 3, color, 3)
             except:
-                import traceback
-                traceback.print_exc()
+                # import traceback
+                # traceback.print_exc()
                 pass
         # print("destroy")
         # cap.release()
