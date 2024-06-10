@@ -3,7 +3,7 @@ import traceback
 from lib.Utils import Utils
 class SpeechToText:
     def __init__(self, onReceiveSpeechToText) -> None:
-        self.recognizer = sr.Recognizer()
+        self.recognizer = sr.Recognizer(language="vi")
         self.mic = sr.Microphone()
         self.onReceiveSpeechToText = onReceiveSpeechToText
         self.__isRunning = False
