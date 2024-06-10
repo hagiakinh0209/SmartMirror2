@@ -9,6 +9,9 @@ from lib.SpeechToTextModule.SpeechToTextModule import SpeechToText
 from lib.Utils import Utils
 from model.YoutubeVidModel import YoutubeVidList, YoutubeVid
 from pynput.keyboard import Listener, KeyCode
+from lib.Utils import Utils
+import time
+
 
 # reactive python module
 import multiprocessing
@@ -85,7 +88,13 @@ class MusicController:
 def onTalk(key):
     if (key == KeyCode(char="c")) and (not speechToText.isRunning()):
         print("we got key " + str(key))
-        speechToText.start()
+        def playNotificationSound():
+            Utils.playNotificationSound(isIntro=True)
+            time.sleep(Utils.talkingDuration)
+            Utils.playNotificationSound(isIntro=False)
+        threading.Thread(target=playNotificationSound).start()
+        threading.Thread(target=speechToText.start).start()
+        
 
 
 #Route to render GUI

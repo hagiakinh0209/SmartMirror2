@@ -1,6 +1,6 @@
 import speech_recognition as sr
 import traceback
-
+from lib.Utils import Utils
 class SpeechToText:
     def __init__(self, onReceiveSpeechToText) -> None:
         self.recognizer = sr.Recognizer()
@@ -15,7 +15,7 @@ class SpeechToText:
         try:
             with self.mic as source:
                 self.recognizer.adjust_for_ambient_noise(source)
-                audio = self.recognizer.record(self.mic, duration=5)
+                audio = self.recognizer.record(self.mic, duration=Utils.talkingDuration)
                 self.onReceiveSpeechToText(self.recognizer.recognize(audio)) #Output
         except Exception:
             print(traceback.format_exc())
