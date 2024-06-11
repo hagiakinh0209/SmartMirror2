@@ -11,6 +11,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/musicplayer.css') }}" />
+    <script    src="https://code.responsivevoice.org/responsivevoice.js?key=YHcGTXJl"></script>
+    <script>
+        ResponsiveVoice.setDefaultVoice("Vietnamese Male");
+    </script>
 </head>
 
 <body>
@@ -141,6 +145,12 @@
                 console.log(msg.speechToTextOutPut_play);
                 document.getElementById("searchYoutubeVidEditText").value = msg.speechToTextOutPut_play
                 document.getElementById("youtube-icon").src = "https://i.gifer.com/ZKZg.gif"
+            })
+            socket.on('message', function (msg) {
+                console.log(msg)
+                if (msg === "speak-aloud") {
+                    responsiveVoice.speak(document.getElementById("chatBotAnswerTextBox").value, 'Vietnamese Male');
+                }
             })
         </script>
         <script type="text/javascript" src="app.js"></script>

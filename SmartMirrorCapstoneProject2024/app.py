@@ -33,7 +33,9 @@ def onReceiveSpeechToText(predictedText):
     if Utils.checkStartWithString(start = Utils.startWordToPlayYoutubeVid, string=predictedText):
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len(Utils.startWordToPlayYoutubeVid):]})))
-        queryYoutubeVidIdAndSendToFrontEnd(predictedText[len("play"):])
+        queryYoutubeVidIdAndSendToFrontEnd(predictedText[len(Utils.startWordToPlayYoutubeVid):])
+    elif str(predictedText).lower() == Utils.speakAloudCmd.lower():
+        socket.send("speak-aloud")
     else:
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": predictedText})))
