@@ -30,7 +30,7 @@ socket = SocketIO(app)
 # This function is the callback when the speech to text module finished transcibing. 
 # predictedText is the output if speech to text module.
 def onReceiveSpeechToText(predictedText):
-    if Utils.checkStartWithString(start="play", string=predictedText):
+    if Utils.checkStartWithString(start = Utils.startWordToPlayYoutubeVid, string=predictedText):
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len("play"):]})))
         queryYoutubeVidIdAndSendToFrontEnd(predictedText[len("play"):])
