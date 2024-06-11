@@ -32,13 +32,16 @@ socket = SocketIO(app)
 def onReceiveSpeechToText(predictedText):
     if Utils.checkStartWithString(start = Utils.startWordToPlayYoutubeVid, string=predictedText):
         #This will only render a text in the input form on the front end side. Nothing else.
-        socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len("play"):]})))
+        socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len(Utils.startWordToPlayYoutubeVid):]})))
         queryYoutubeVidIdAndSendToFrontEnd(predictedText[len("play"):])
     else:
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": predictedText})))
         chatBot.ask(str(predictedText))
 
+def onListeningError():
+    socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": Utils.onListeningErrorText})))
+    socket.emit("chatBotAnswer", json.loads(json.dumps({ "answer": ""})))
 
 # This function is the callback when the chat bot module finished its works. 
 # chatBotAnswer is out in the form of string.
@@ -90,8 +93,14 @@ def onTalk(key):
         print("we got key " + str(key))
         def playNotificationSound():
             Utils.playNotificationSound(isIntro=True)
+            socket.send("pause")
+            MusicController.playOrPause = False
+
             time.sleep(Utils.talkingDuration)
+
             Utils.playNotificationSound(isIntro=False)
+            socket.send("play")
+            MusicController.playOrPause = True
         threading.Thread(target=playNotificationSound).start()
         threading.Thread(target=speechToText.start).start()
         
@@ -190,7 +199,7 @@ if __name__ == "__main__":
     ch.setFormatter(formatter)
     root.addHandler(ch)
 
-    speechToText = SpeechToText(onReceiveSpeechToText)
+    speechToText = SpeechToText(onReceiveSpeechToText, onListeningError)
 
 
     listener = Listener(on_press = onTalk)  

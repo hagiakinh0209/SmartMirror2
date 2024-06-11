@@ -2,11 +2,12 @@ import speech_recognition as sr
 import traceback
 from lib.Utils import Utils
 class SpeechToText:
-    def __init__(self, onReceiveSpeechToText) -> None:
+    def __init__(self, onReceiveSpeechToText, onListeningError) -> None:
         self.recognizer = sr.Recognizer(language="vi")
         self.mic = sr.Microphone()
         self.onReceiveSpeechToText = onReceiveSpeechToText
         self.__isRunning = False
+        self.onListeningError = onListeningError
 
     
 
@@ -19,8 +20,9 @@ class SpeechToText:
                 self.onReceiveSpeechToText(self.recognizer.recognize(audio)) #Output
         except Exception:
             print(traceback.format_exc())
+            self.onListeningError()
+
         self.__isRunning = False
-        
 
     def isRunning(self):
         return self.__isRunning
