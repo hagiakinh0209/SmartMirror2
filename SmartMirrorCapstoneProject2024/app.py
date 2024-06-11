@@ -37,7 +37,7 @@ def onReceiveSpeechToText(predictedText):
     else:
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_chatbot", json.loads(json.dumps({ "speechToTextOutPut_chatbot": predictedText})))
-
+        chatBot.ask(str(predictedText))
 
 
 # This function is the callback when the chat bot module finished its works. 
