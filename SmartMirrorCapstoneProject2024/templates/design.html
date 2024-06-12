@@ -11,7 +11,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/musicplayer.css') }}" />
-    <script    src="https://code.responsivevoice.org/responsivevoice.js?key=YHcGTXJl"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/textSlider.css') }}" />
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=YHcGTXJl"></script>
     <script>
         ResponsiveVoice.setDefaultVoice("Vietnamese Male");
     </script>
@@ -19,13 +20,32 @@
 
 <body>
     <div class="container-fluid">
+        <div id="slider">
+            <ul>
+                {% for atc in articles %}
+                <li>
+                    <div class="slider-container">
+                        <p>{{atc.title}}</p>
+                        <p>{{atc.description}}</p>
+                    </div>
+                </li>
+                {% else %}
+                <li>
+                    <div class="slider-container">
+                        <p>Đang tải bản tin</p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
         <div class="dateTime">
-            <form onsubmit="submitSearchForYoutubeVid(event)" id = "searchForYoutubeVidForm">
-                <input type="text" name="song" id = "searchYoutubeVidEditText">
+            <form onsubmit="submitSearchForYoutubeVid(event)" id="searchForYoutubeVidForm">
+                <input type="text" name="song" id="searchYoutubeVidEditText">
                 <input type="submit" value="search">
             </form>
-            <form onsubmit="submitAskChatBot(event)" id = "chatBotForm">
-                <input type="text" name="askChatBot" id = "chatBotEditText">
+            <form onsubmit="submitAskChatBot(event)" id="chatBotForm">
+                <input type="text" name="askChatBot" id="chatBotEditText">
                 <input type="submit" value="ask">
             </form>
             <p id="clock"></p>
@@ -47,7 +67,8 @@
                     </div>
                 </div>
 
-                <div><img id="chatBotLoadingImage" src="https://i.gifer.com/ZKZg.gif" width=40px height=40px style = "display:none"></div>
+                <div><img id="chatBotLoadingImage" src="https://i.gifer.com/ZKZg.gif" width=40px height=40px
+                        style="display:none"></div>
                 <textarea id="chatBotAnswerTextBox" name="chatBotAnswerTextBox" rows="20" cols="50">
                     </textarea>
                 <div class="row">
@@ -75,8 +96,8 @@
         </div>
         <script type="text/javascript" src="{{ url_for('static',filename='javascript/youtubeSong.js') }}"> </script>
         <script>
-            var socket = io()  
-            
+            var socket = io()
+
             function playAudio() {
                 player.playVideo()
             }
@@ -130,18 +151,18 @@
                 socket.emit("askAQuestion", { askChatBot: event.target["askChatBot"].value })
                 document.getElementById("chatBotLoadingImage").style.display = "block"
             }
-            socket.on("chatBotAnswer", function(msg){
+            socket.on("chatBotAnswer", function (msg) {
                 chatBotAnswerTextBox = document.getElementById("chatBotAnswerTextBox")
                 chatBotAnswerTextBox.innerText = msg.answer
                 document.getElementById("chatBotLoadingImage").style.display = "none"
 
             })
-            socket.on("speechToTextOutPut_chatbot", function(msg){
+            socket.on("speechToTextOutPut_chatbot", function (msg) {
                 console.log(msg.speechToTextOutPut_chatbot);
                 document.getElementById("chatBotEditText").value = msg.speechToTextOutPut_chatbot
                 document.getElementById("chatBotLoadingImage").style.display = "block"
             })
-            socket.on("speechToTextOutPut_play", function(msg){
+            socket.on("speechToTextOutPut_play", function (msg) {
                 console.log(msg.speechToTextOutPut_play);
                 document.getElementById("searchYoutubeVidEditText").value = msg.speechToTextOutPut_play
                 document.getElementById("youtube-icon").src = "https://i.gifer.com/ZKZg.gif"

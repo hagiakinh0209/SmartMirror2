@@ -111,9 +111,8 @@ def onTalk(key):
 #Route to render GUI
 @app.route('/')
 def show_entries():
-    general_Data = {
-        'title': 'Music Player'}
-    return render_template('design.html', **general_Data)
+    
+    return render_template('design.html', articles = [{"title":"heeeeeeeeeee", "description": "asndkqwwhqweqweqw"}, {"title":"haaaaaaaaaaaaaaa", "description": "aqqqqqqqqqqqqqqqqwwwwww"}])
 
 @socket.on('connect')
 def on_connect(msg):
