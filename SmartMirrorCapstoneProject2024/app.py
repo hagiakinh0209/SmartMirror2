@@ -10,6 +10,7 @@ from lib.Utils import Utils
 from model.YoutubeVidModel import YoutubeVidList, YoutubeVid
 from pynput.keyboard import Listener, KeyCode
 from lib.Utils import Utils
+from lib.NewsProvider.NewsProvider import NewsProvider
 import time
 
 
@@ -112,7 +113,10 @@ def onTalk(key):
 @app.route('/')
 def show_entries():
     
-    return render_template('design.html', articles = [{"title":"heeeeeeeeeee", "description": "asndkqwwhqweqweqw"}, {"title":"haaaaaaaaaaaaaaa", "description": "aqqqqqqqqqqqqqqqqwwwwww"}])
+    newsProvider = NewsProvider()
+    newsProvider.fetchingArticles()
+    articles = newsProvider.toTitleDescriptionListDict()
+    return render_template('design.html', articles = articles)
 
 @socket.on('connect')
 def on_connect(msg):
