@@ -7,19 +7,18 @@
 
 #slider
 {
-	margin: auto;
+	/* margin: auto; */
 	overflow: hidden;
-	padding: 20px;
 	margin-top: 50px;
 	position: relative;
-	width: 600px;
+	width: 500px;
 }
 
 #slider li
 {
 	float: left;
 	position: relative;
-	width: 600px;
+	width: 500px;
 	display: inline-block;
 	height: 200px;
 }
@@ -35,7 +34,7 @@
 	-moz-transition: left .2s linear;
 	-o-transition: left .2s linear;
 	-webkit-transition: left .2s linear;
-	margin-left: -25px;
+	margin-left: -50px;
   font-family: open sans;
   color: #666;
 }
@@ -45,11 +44,11 @@
 .slider-container
 {
   color:#e9e4e4;
-	margin: 0 auto;
+	/* margin: 0 auto; */
 	padding: 0;
-	width: 550px;
+	width: 450px;
   min-height: 180px;
-  text-align:center;
+  text-align:left;
 }
 
 .slider-container h2
@@ -59,7 +58,7 @@
 
 .slider-container  p
 {
-	margin: 10px 25px;
+	margin: 10px 10px;
 	font-weight: semi-bold;
 	line-height: 150%;
 }
@@ -71,15 +70,15 @@
 	2% {opacity:1;}
 	20% {left:0px; opacity:1;}
 	22.5% {opacity:0.6;}
-	25% {left:-600px; opacity:1;}
-	45% {left:-600px; opacity:1;}
+	25% {left:-500px; opacity:1;}
+	45% {left:-500px; opacity:1;}
 	47.5% {opacity:0.6;}
-	50% {left:-1200px; opacity:1;}
-	70% {left:-1200px; opacity:1;}
+	50% {left:-1000px; opacity:1;}
+	70% {left:-1000px; opacity:1;}
 	72.5% {opacity:0.6;}
-	75% {left:-1800px; opacity:1;}
+	75% {left:-1500px; opacity:1;}
 	95% {opacity:1;}
-	98% {left:-1800px; opacity:0;} 
+	98% {left:-1500px; opacity:0;} 
 	100% {left:0px; opacity:0;}
 }
 

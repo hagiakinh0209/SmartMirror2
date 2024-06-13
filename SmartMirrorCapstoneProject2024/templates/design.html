@@ -20,24 +20,6 @@
 
 <body>
     <div class="container-fluid">
-        <div id="slider">
-            <ul>
-                {% for atc in articles %}
-                <li>
-                    <div class="slider-container">
-                        <p>{{atc.title}}</p>
-                        <p>{{atc.description}}</p>
-                    </div>
-                </li>
-                {% else %}
-                <li>
-                    <div class="slider-container">
-                        <p>Đang tải bản tin</p>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
 
         <div class="dateTime">
             <form onsubmit="submitSearchForYoutubeVid(event)" id="searchForYoutubeVidForm">
@@ -64,6 +46,24 @@
                         <div class="description"></div>
                         <div><span class="humidity"></span></div>
                         <div><span class="wind"></span></div>
+                    </div>
+                    <div id="slider">
+                        <ul>
+                            {% for atc in articles %}
+                            <li>
+                                <div class="slider-container">
+                                    <p>{{atc.title}}</p>
+                                    <p>{{atc.description}}</p>
+                                </div>
+                            </li>
+                            {% else %}
+                            <li>
+                                <div class="slider-container">
+                                    <p>Đang tải bản tin</p>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
 
