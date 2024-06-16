@@ -9,6 +9,8 @@ sudo apt install libpython3.9-dev
 cd pyaudio
 python setup.py install
 
+please using this https://useragentstring.com/ to find the header agent to by pass the robot verification
+
 ### Installing
 
 Installing dependencies 
