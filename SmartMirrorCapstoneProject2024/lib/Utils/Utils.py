@@ -1,5 +1,9 @@
 import os
 
+
+__location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
 talkingDuration = 8
 startWordToPlayYoutubeVid = "bật youtube"
 onListeningErrorText = "Âm thanh không rõ ràng, vui lòng thủ lại."
@@ -11,9 +15,9 @@ def checkStartWithString(start : str, string : str) -> bool:
 def playNotificationSound(isIntro: bool):
     command = ("ffplay -nodisp -autoexit ")
     if isIntro:
-        os.system("{} /home/kinh/DoAn/SmartMirrorCapstoneProject2024/static/asset/start_talking_notifications-sound.mp3".format(command))
+        os.system("{} {}/start_talking_notifications-sound.mp3".format(command, __location__))
     else:
-        os.system("{} /home/kinh/DoAn/SmartMirrorCapstoneProject2024/static/asset/stop_talking_notifications-sound.mp3".format(command))
+        os.system("{} {}/stop_talking_notifications-sound.mp3".format(command, __location__))
 
 if __name__ == "__main__":
     print(checkStartWithString("bật", "bẬT youtube"))
