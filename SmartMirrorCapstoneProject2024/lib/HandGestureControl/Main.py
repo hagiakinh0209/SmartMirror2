@@ -5,10 +5,11 @@ import os
 from lib.ImgProvider.ImgProvider import  ImgProvider
 
 class HandGesture:
-    def __init__(self, playAndPauseCommand, nextSongCommand, previousSongCommand, isRealsenseCamera = False):
+    def __init__(self, playAndPauseCommand, nextSongCommand, previousSongCommand, onModeChange, isRealsenseCamera = False):
         self.playAndPauseCommand = playAndPauseCommand
         self.nextSongCommand = nextSongCommand
         self.previousSongCommand = previousSongCommand
+        self.onModeChange = onModeChange
         self.stopFlag = False
         self.isRealsenseCamera = isRealsenseCamera
         self.curCmd = "firstCurCmd"
@@ -18,6 +19,9 @@ class HandGesture:
     def setStop(self):
         self.stopFlag = True
     def run(self):
+        preNotificationText = ''
+        notificationText = "Hãy đưa tay ra trước camera."
+
         self.imgProvider.runWithThread()
         pTime = 0
 
@@ -87,7 +91,7 @@ class HandGesture:
                         else:
                             fingers.append(0)
 
-
+                    oldMode = mode
                 #  print(fingers)
                     if (fingers == [0,0,0,0,0]) & (active == 0 ):
                         mode='N'
@@ -101,6 +105,19 @@ class HandGesture:
                         mode = 'playAndPause'
                         active = 1
 
+                     
+                    if mode != oldMode and mode != 'N' and mode != 'P':
+                        if mode == 'playAndPause':
+                            notificationText = "Chế độ bật, tắt youtube audio"
+                        elif mode == 'Volume' :
+                            notificationText = "Chế độ điều chỉnh âm lượng"
+                        elif mode == 'NextOrPrev' :
+                            notificationText = "Chế độ tiến, lùi audio"
+                    if mode=='N' or mode == 'P':    
+                        notificationText = "Chế độ idle"
+                    if preNotificationText != notificationText: 
+                        self.onModeChange(notificationText)
+                    preNotificationText = notificationText
             ############# NextOrPrev 👇👇👇👇##############
                 if mode == 'NextOrPrev':
                     active = 1

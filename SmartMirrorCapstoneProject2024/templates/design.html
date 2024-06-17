@@ -12,6 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/musicplayer.css') }}" />
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/textSlider.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/gestureNotification.css') }}" />
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=YHcGTXJl"></script>
     <script>
         ResponsiveVoice.setDefaultVoice("Vietnamese Male");
@@ -20,7 +21,10 @@
 
 <body>
     <div class="container-fluid">
-
+        <div id="gestureModeChangeNotification" class="growl">
+            <p id ="gestureModeChangeNotificationContent">This is a small notification</p>
+            <span id="close-btn" onclick="closeNotification()" class="close-btn">X</span>
+        </div>
         <div class="dateTime">
             <form onsubmit="submitSearchForYoutubeVid(event)" id="searchForYoutubeVidForm">
                 <input type="text" name="song" id="searchYoutubeVidEditText">
@@ -73,7 +77,8 @@
                     </textarea>
                 <div class="row">
                     <div class="cover">
-                        <img  id = "youtube-thumbnail" src="https://mariongrandvincent.github.io/HTML-Personal-website/img-codePen/kygo.png"
+                        <img id="youtube-thumbnail"
+                            src="https://mariongrandvincent.github.io/HTML-Personal-website/img-codePen/kygo.png"
                             alt="">
                     </div>
                     <div class="titre">
@@ -143,7 +148,7 @@
                 var songTitle = document.getElementById("songTitle");
                 songTitle.innerText = msg.yt_title
                 onYouTubeIframeAPIReady()
-                document.getElementById("youtube-thumbnail").src = "https://img.youtube.com/vi/"+ msg.youtubeSongUrl + "/maxresdefault.jpg"
+                document.getElementById("youtube-thumbnail").src = "https://img.youtube.com/vi/" + msg.youtubeSongUrl + "/maxresdefault.jpg"
             })
             function submitAskChatBot(event) {
                 event.preventDefault();
@@ -173,12 +178,20 @@
                     responsiveVoice.speak(document.getElementById("chatBotAnswerTextBox").value, 'Vietnamese Male');
                 }
             })
+            socket.on("gestureModeChange", async function (msg) {
+                console.log(msg.gestureModeChange);
+                closeNotification()
+                await new Promise(r => setTimeout(r, 500));
+                document.getElementById("gestureModeChangeNotificationContent").innerText = msg.gestureModeChange
+                openNotification()
+            })
         </script>
         <script type="text/javascript" src="app.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="{{ url_for('static',filename='javascript/dateTime.js') }}"> </script>
         <script type="text/javascript" src="{{ url_for('static',filename='javascript/weather.js') }}"> </script>
+        <script type="text/javascript" src="{{ url_for('static',filename='javascript/gestureNotification.js') }}"> </script>
 
 </body>
 

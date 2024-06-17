@@ -90,7 +90,10 @@ class MusicController:
     @staticmethod
     def updateSongMetadata():
         socket.emit( 'updateMetaData', json.loads(json.dumps(return_dict()[MusicController.currentSongIndex -1])) )    
-
+    
+    @staticmethod
+    def onModeChange(curMode):
+        socket.emit("gestureModeChange", json.loads(json.dumps({"gestureModeChange" : curMode})))
 def onTalk(key):
     if (key == KeyCode(char="c")) and (not speechToText.isRunning()):
         print("we got key " + str(key))

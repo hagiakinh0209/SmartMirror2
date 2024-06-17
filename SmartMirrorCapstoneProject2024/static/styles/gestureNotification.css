@@ -1,0 +1,27 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  .growl {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    background-color: aquamarine;
+    min-width: 300px;
+    min-height: 50px;
+    padding: 8px;
+    border-radius: 8px;
+    transform: translateX(calc(100% + 1rem));
+    transition: all 0.2s ease;
+  }
+  
+  .open {
+    transform: translateX(0px);
+  }
+  
+  .growl .close-btn {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    cursor: pointer;
+  }
