@@ -31,6 +31,7 @@ socket = SocketIO(app)
 # This function is the callback when the speech to text module finished transcibing. 
 # predictedText is the output if speech to text module.
 def onReceiveSpeechToText(predictedText):
+    predictedText = predictedText.replace("*", "")
     if Utils.checkStartWithString(start = Utils.startWordToPlayYoutubeVid, string=predictedText):
         #This will only render a text in the input form on the front end side. Nothing else.
         socket.emit("speechToTextOutPut_play", json.loads(json.dumps({ "speechToTextOutPut_play": predictedText[len(Utils.startWordToPlayYoutubeVid):]})))
@@ -49,6 +50,7 @@ def onListeningError():
 # This function is the callback when the chat bot module finished its works. 
 # chatBotAnswer is out in the form of string.
 def notifier(chatBotAnswer):
+    chatBotAnswer = chatBotAnswer.replace("*", "")
     socket.emit("chatBotAnswer", json.loads(json.dumps({ "answer": chatBotAnswer})))
 
 
