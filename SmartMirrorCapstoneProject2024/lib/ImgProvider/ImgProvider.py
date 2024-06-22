@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from threading import Lock, Thread
+import time
 class SingletonMeta(type):
     """
     This is a thread-safe implementation of Singleton.
@@ -44,6 +45,7 @@ class ImgProvider(metaclass=SingletonMeta):
         wCam, hCam = 640, 480
         fps = 15
         self.img = None
+        self.sampleImagesCallback = None
 
         if self.isRealsenseCamera :
             import pyrealsense2 as rs
@@ -98,7 +100,7 @@ class ImgProvider(metaclass=SingletonMeta):
             self.cap.set(3,wCam)
             self.cap.set(4,hCam)
     def __run(self):
-
+        start = time.time()
         while(True):
             try:
                 if self.isRealsenseCamera:
@@ -130,10 +132,18 @@ class ImgProvider(metaclass=SingletonMeta):
                 else:
                     success, self.img = self.cap.read()
 
+                sampleImagesCallback, interval = self.sampleImagesCallback
+                end = time.time()
+                if end - start > interval:
+                    sampleImagesCallback(self.img)
+                    start = end
+
             except: 
-                # import traceback
-                # traceback.print_exc()
+                import traceback
+                traceback.print_exc()
                 pass
+            
+                    
     def runWithThread(self):
         if not self.process.is_alive():
             self.process.start()
@@ -142,6 +152,8 @@ class ImgProvider(metaclass=SingletonMeta):
 
     def getImage(self):
         return self.img
+    def setSampleImagesCallback(self, sampleImagesCallback, interval):
+        self.sampleImagesCallback = (sampleImagesCallback, interval)
     
 
 

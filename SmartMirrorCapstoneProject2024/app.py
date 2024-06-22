@@ -11,7 +11,11 @@ from model.YoutubeVidModel import YoutubeVidList, YoutubeVid
 from pynput.keyboard import Listener, KeyCode
 from lib.Utils import Utils
 from lib.NewsProvider.NewsProvider import NewsProvider
+from lib.SentimentAnalysis.SentimentAnalysis import FER
+from lib.RecommendationSystem.RecommendationSystem import RecommendationSystem
+from lib.ImgProvider.ImgProvider import ImgProvider
 import time
+import os
 
 
 # reactive python module
@@ -123,13 +127,26 @@ def show_entries():
     articles = newsProvider.toTitleDescriptionListDict()
     return render_template('design.html', articles = articles)
 
+def onReceiveImage(image):
+    topEmotion, score = fer.analyzeSentiment(image)
+    if topEmotion == "angry" or topEmotion == "angry" or topEmotion == "disgust" or topEmotion == "fear" or topEmotion == "sad":
+        recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1], numberOfSongs=3)
+    else:
+        recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=3)
+    print(recommendedSongs)
+
+
 @socket.on('connect')
 def on_connect(msg):
     print('Server received connection')
-    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, MusicController.onModeChange, True)
+    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, MusicController.onModeChange, usingRealsense)
     handGestureThread = threading.Thread(target=mHandGesture.run)
     handGestureThread.start()
     queryYoutubeVidIdAndSendToFrontEnd("most viral songs")
+
+    imgProvider.setSampleImagesCallback(onReceiveImage, 5)
+    threading.Thread(target=recommendationSystem.crawTrackAnalysisDataAndPredict).start()
+
 
         
 @socket.on('message')
@@ -197,7 +214,23 @@ def onAskChatBot(msg):
     question = msg["askChatBot"]
     chatBot.ask(str(question))
 
+def getRandomSongsIndex(clusterIndex, numberOfSongs: int):
+    import random
+    clusterAssocitedWithIndex = [] 
+    for i, song in enumerate(recommendationSystem.getCluster()) :
+        if int(song[0][0]) in clusterIndex:
+            clusterAssocitedWithIndex.append(i)
+    return random.sample(clusterAssocitedWithIndex, k = numberOfSongs)
+
 if __name__ == "__main__":
+    usingRealsense = True
+    imgProvider = ImgProvider(usingRealsense)
+    recommendationSystem = RecommendationSystem()
+    recommendationSystem.crawTrendingSongs()
+
+    recommendedSongs = []
+
+    fer = FER()
     
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)

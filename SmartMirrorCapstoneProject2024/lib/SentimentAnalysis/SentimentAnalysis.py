@@ -5,7 +5,7 @@ from typing import Sequence, Tuple, Union
 import numpy as np
 
 from tensorflow.keras.models import load_model
-# from lib.ImgProvider.ImgProvider import ImgProvider
+from lib.ImgProvider.ImgProvider import ImgProvider
 
 
 logging.basicConfig(level=logging.INFO)
@@ -237,7 +237,7 @@ class FER:
             x_end , y_end = int((box.xmin + box.width ) * img.shape[1]) , int((box.ymin + box.height ) * img.shape[0])
 
             top_emotion, score = self.top_emotion(  img, [[x_start, y_start, x_end - x_start, y_end - y_start]] )
-            img = cv2.rectangle(img, (x_start, y_start), (x_end, y_end), color=(0,0,255), thickness=2)
+            # img = cv2.rectangle(img, (x_start, y_start), (x_end, y_end), color=(0,0,255), thickness=2)
 
             # cv2.putText(img,f'top_emotion '+ top_emotion +f':{int(score*100)}',(0,50), cv2.FONT_ITALIC,1,(255,0,0),2)
             # cv2.imshow("myimg" ,img)
