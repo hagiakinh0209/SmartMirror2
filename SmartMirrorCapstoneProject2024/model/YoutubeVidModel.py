@@ -1,3 +1,5 @@
+from random import randrange
+
 class YoutubeVid:
     def __init__(self, youtubeVidUrl, yt_title):
         self.youtubeVidUrl = youtubeVidUrl
@@ -15,6 +17,8 @@ class YoutubeVidList :
         self.youtubeVidList = []
     def addYoutubeVidMetadata(self, youtubeVid : YoutubeVid):
         self.youtubeVidList.append(youtubeVid)
+    def insertRandomYoutubeVidMetadata(self, youtubeVid : YoutubeVid):
+        self.__random_insert(self.youtubeVidList, youtubeVid)
     def getYoutubeSongUrl(self, position):
         return self.youtubeVidList[position].getYoutubeVidUrl()
     def getYoutubetTitle(self, position):
@@ -25,6 +29,8 @@ class YoutubeVidList :
         return self.youtubeVidList
     def clearYoutubeVidList(self):
         self.youtubeVidList = []
+    def __random_insert(self, lst, item):
+        lst.insert(randrange(len(lst)+1), item)
 
 
 if __name__ == "__main__":

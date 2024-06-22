@@ -16,7 +16,8 @@ from lib.RecommendationSystem.RecommendationSystem import RecommendationSystem
 from lib.ImgProvider.ImgProvider import ImgProvider
 import time
 import os
-
+import re, requests, urllib.parse, urllib.request
+from bs4 import BeautifulSoup
 
 # reactive python module
 import multiprocessing
@@ -134,6 +135,25 @@ def onReceiveImage(image):
     else:
         recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=3)
     print(recommendedSongs)
+    
+    cluster = recommendationSystem.getCluster()
+    def fetchingRecommendedSongs():
+        query_string = urllib.parse.urlencode({"search_query": cluster[songIndex][1]})
+        formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
+        search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
+
+        fetchingSingleYoutubeVid(i = 0, search_results= search_results, renderToFrontEnd=False, addOrInsertRandomly="insert")
+
+    for songIndex in recommendedSongs:
+        fetchingYoutubeVidDisposable = rx.range(1).pipe(
+        ops.do_action(lambda i : fetchingRecommendedSongs()),
+        ops.subscribe_on(thread_pool_scheduler)
+        ).subscribe(
+        on_error=lambda e : print("fetching recommeded songs error, {e}"),
+        on_completed=lambda c : print("fetching recommeded songs completed")
+    )
+        
+
 
 
 @socket.on('connect')
@@ -144,7 +164,7 @@ def on_connect(msg):
     handGestureThread.start()
     queryYoutubeVidIdAndSendToFrontEnd("most viral songs")
 
-    imgProvider.setSampleImagesCallback(onReceiveImage, 5)
+    imgProvider.setSampleImagesCallback(onReceiveImage, Utils.imageSamplingInterval)
     threading.Thread(target=recommendationSystem.crawTrackAnalysisDataAndPredict).start()
 
 
@@ -159,8 +179,6 @@ def onSearchingForYoutubeSong(msg):
     music_name = msg["songName"]
     queryYoutubeVidIdAndSendToFrontEnd(music_name)
 def queryYoutubeVidIdAndSendToFrontEnd(music_name):
-    import re, requests, urllib.parse, urllib.request
-    from bs4 import BeautifulSoup
 
     
     query_string = urllib.parse.urlencode({"search_query": music_name})
@@ -168,21 +186,6 @@ def queryYoutubeVidIdAndSendToFrontEnd(music_name):
 
     search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
     youtubeVidsize = len(search_results) if  len(search_results)<= 10 else 10
-    def fetchingSingleYoutubeVid(i):
-        clip = requests.get("https://www.youtube.com/watch?v=" + "{}".format(search_results[i]))
-        clip2 = "https://www.youtube.com/watch?v=" + "{}".format(search_results[i])
-
-        inspect = BeautifulSoup(clip.content, "html.parser")
-        yt_title = inspect.find_all("meta", property="og:title")
-        def parseYoutubeURL( url:str)->str:
-            data = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
-            if data:
-                return data[0]
-            return ""
-        if i == 0:
-            socket.emit("youtubeSongUrl", json.loads(json.dumps({"youtubeSongUrl" : parseYoutubeURL(clip2), "yt_title" : yt_title[0]['content']})))
-        youtubeVidList.addYoutubeVidMetadata(YoutubeVid(parseYoutubeURL(clip2), yt_title[0]['content']))
-        print(youtubeVidList.getYoutubeVidList())
     def on_subscribe():
         isFetching = True
         print("start fetching youtube vid")
@@ -199,14 +202,32 @@ def queryYoutubeVidIdAndSendToFrontEnd(music_name):
         fetchingYoutubeVidDisposable.dispose()
         print("dispose! fetching youtube vids")
     fetchingYoutubeVidDisposable = rx.range(youtubeVidsize).pipe(
-        ops.do_action(lambda i : fetchingSingleYoutubeVid(i)),
+        ops.do_action(lambda i : fetchingSingleYoutubeVid(i, search_results=search_results)),
         ops.subscribe_on(thread_pool_scheduler)
         ).subscribe(
         on_error=on_error,
         on_completed=on_completed
     )
     on_subscribe()
+def fetchingSingleYoutubeVid(i, search_results, renderToFrontEnd = True, addOrInsertRandomly = "add"):
+    
+    clip = requests.get("https://www.youtube.com/watch?v=" + "{}".format(search_results[i]))
+    clip2 = "https://www.youtube.com/watch?v=" + "{}".format(search_results[i])
 
+    inspect = BeautifulSoup(clip.content, "html.parser")
+    yt_title = inspect.find_all("meta", property="og:title")
+    def parseYoutubeURL( url:str)->str:
+        data = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
+        if data:
+            return data[0]
+        return ""
+    if i == 0 and renderToFrontEnd:
+        socket.emit("youtubeSongUrl", json.loads(json.dumps({"youtubeSongUrl" : parseYoutubeURL(clip2), "yt_title" : yt_title[0]['content']})))
+    if addOrInsertRandomly == "add":
+        youtubeVidList.addYoutubeVidMetadata(YoutubeVid(parseYoutubeURL(clip2), yt_title[0]['content']))
+    else :
+        youtubeVidList.insertRandomYoutubeVidMetadata(YoutubeVid(parseYoutubeURL(clip2), yt_title[0]['content']))
+    print(youtubeVidList.getYoutubeVidList())
     
 
 @socket.on('askAQuestion')
@@ -223,7 +244,7 @@ def getRandomSongsIndex(clusterIndex, numberOfSongs: int):
     return random.sample(clusterAssocitedWithIndex, k = numberOfSongs)
 
 if __name__ == "__main__":
-    usingRealsense = True
+    usingRealsense =  Utils.usingRealsense
     imgProvider = ImgProvider(usingRealsense)
     recommendationSystem = RecommendationSystem()
     recommendationSystem.crawTrendingSongs()
