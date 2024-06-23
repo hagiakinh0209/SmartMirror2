@@ -237,5 +237,6 @@ if __name__ == "__main__":
     sys.path.append(r"/home/kinh/DoAn/SmartMirrorCapstoneProject2024/lib")
     from ImgProvider.ImgProvider import  ImgProvider
 
-    hgt = HandGesture(playAndPauseCommand=None, nextSongCommand=None,previousSongCommand=None, isRealsenseCamera=True)
+    hgt = HandGesture(playAndPauseCommand=None, nextSongCommand=None,previousSongCommand=None, onModeChange=lambda i: print(""),  isRealsenseCamera=False)
+    hgt.imgProvider.setSampleImagesCallback(None, 1000)
     hgt.run()
