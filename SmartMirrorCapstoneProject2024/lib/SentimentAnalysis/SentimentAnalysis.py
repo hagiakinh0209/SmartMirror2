@@ -7,6 +7,9 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from lib.ImgProvider.ImgProvider import ImgProvider
 
+import os
+__location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("fer")
@@ -51,7 +54,7 @@ class FER:
             self.__emotion_target_size = (64, 64)  # hardcoded for now
         else:
             # Local Keras model
-            emotion_model = "/home/kinh/DoAn/SmartMirrorCapstoneProject2024/testFolder/emotion_model.hdf5"
+            emotion_model = "{}/emotion_model.hdf5".format( __location__)
             log.debug("Emotion model: {}".format(emotion_model))
             self.__emotion_classifier = load_model(emotion_model, compile=False)
             self.__emotion_classifier.make_predict_function()
