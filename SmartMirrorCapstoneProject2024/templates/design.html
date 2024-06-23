@@ -105,10 +105,12 @@
 
             function playAudio() {
                 player.playVideo()
+                changePlayButton(true);
             }
 
             function pauseAudio() {
                 player.pauseVideo()
+                changePlayButton(false);
             }
             socket.connect('https://127.0.0.1:5000/')
             socket.on('connect', function () { })

@@ -30,7 +30,7 @@ function onYouTubeIframeAPIReady() {
 
   
   function togglePlayButton(play) {
-    document.getElementById("youtube-icon").src = play ? "https://i.ibb.co/8K4qvG7/icons8-pause-button-100.png" : "https://www.freeiconspng.com/uploads/play-button-icon-png-15.png";
+    document.getElementById("youtube-icon").src = play ? "https://raw.githubusercontent.com/hagiakinh0209/SmartMirror2/release1/SmartMirrorCapstoneProject2024/static/asset/icons8-pause-button-100.png" : "https://raw.githubusercontent.com/hagiakinh0209/SmartMirror2/release1/SmartMirrorCapstoneProject2024/static/asset/play-button-icon-png-18919(1).png";
   }
 
   function toggleAudio() {
@@ -54,4 +54,7 @@ function onYouTubeIframeAPIReady() {
       togglePlayButton(false);
     }
   }
+}
+function changePlayButton(play) {
+  document.getElementById("youtube-icon").src = play ? "https://raw.githubusercontent.com/hagiakinh0209/SmartMirror2/release1/SmartMirrorCapstoneProject2024/static/asset/icons8-pause-button-100.png" : "https://raw.githubusercontent.com/hagiakinh0209/SmartMirror2/release1/SmartMirrorCapstoneProject2024/static/asset/play-button-icon-png-18919(1).png";
 }
