@@ -114,7 +114,6 @@ def onTalk(key):
             time.sleep(Utils.talkingDuration)
 
             Utils.playNotificationSound(isIntro=False)
-            socket.send("play")
             MusicController.playOrPause = True
         threading.Thread(target=playNotificationSound).start()
         threading.Thread(target=speechToText.start).start()
