@@ -234,18 +234,19 @@ class FER:
         return top_emotion, score
     def analyzeSentiment(self, img: np.ndarray):
         results = self.face_detection.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-        for i, detection in enumerate ( results.detections):
-            box = detection.location_data.relative_bounding_box
-            x_start, y_start = int(box.xmin* img.shape[1]) , int(box.ymin * img.shape[0]) 
-            x_end , y_end = int((box.xmin + box.width ) * img.shape[1]) , int((box.ymin + box.height ) * img.shape[0])
+        if results.detections != None:
+            for i, detection in enumerate ( results.detections):
+                box = detection.location_data.relative_bounding_box
+                x_start, y_start = int(box.xmin* img.shape[1]) , int(box.ymin * img.shape[0]) 
+                x_end , y_end = int((box.xmin + box.width ) * img.shape[1]) , int((box.ymin + box.height ) * img.shape[0])
 
-            top_emotion, score = self.top_emotion(  img, [[x_start, y_start, x_end - x_start, y_end - y_start]] )
-            # img = cv2.rectangle(img, (x_start, y_start), (x_end, y_end), color=(0,0,255), thickness=2)
+                top_emotion, score = self.top_emotion(  img, [[x_start, y_start, x_end - x_start, y_end - y_start]] )
+                # img = cv2.rectangle(img, (x_start, y_start), (x_end, y_end), color=(0,0,255), thickness=2)
 
-            # cv2.putText(img,f'top_emotion '+ top_emotion +f':{int(score*100)}',(0,50), cv2.FONT_ITALIC,1,(255,0,0),2)
-            # cv2.imshow("myimg" ,img)
-        
-            return top_emotion, score
+                # cv2.putText(img,f'top_emotion '+ top_emotion +f':{int(score*100)}',(0,50), cv2.FONT_ITALIC,1,(255,0,0),2)
+                # cv2.imshow("myimg" ,img)
+            
+                return top_emotion, score
 
 
 if __name__ == "__main__":

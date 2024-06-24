@@ -57,6 +57,8 @@ def onListeningError():
 def notifier(chatBotAnswer):
     chatBotAnswer = chatBotAnswer.replace("*", "")
     socket.emit("chatBotAnswer", json.loads(json.dumps({ "answer": chatBotAnswer})))
+    socket.send("speak-aloud")
+
 
 
 
@@ -129,29 +131,31 @@ def show_entries():
     return render_template('design.html', articles = articles)
 
 def onReceiveImage(image):
-    topEmotion, score = fer.analyzeSentiment(image)
-    if topEmotion == "angry" or topEmotion == "angry" or topEmotion == "disgust" or topEmotion == "fear" or topEmotion == "sad":
-        recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1], numberOfSongs=3)
-    else:
-        recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=3)
-    print(recommendedSongs)
-    
-    cluster = recommendationSystem.getCluster()
-    def fetchingRecommendedSongs():
-        query_string = urllib.parse.urlencode({"search_query": cluster[songIndex][1]})
-        formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
-        search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
+    analyzer =  fer.analyzeSentiment(image)
+    if analyzer != None:
+        topEmotion, score = analyzer
+        if topEmotion == "angry" or topEmotion == "angry" or topEmotion == "disgust" or topEmotion == "fear" or topEmotion == "sad":
+            recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1], numberOfSongs=3)
+        else:
+            recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=3)
+        print(recommendedSongs)
+        
+        cluster = recommendationSystem.getCluster()
+        def fetchingRecommendedSongs():
+            query_string = urllib.parse.urlencode({"search_query": cluster[songIndex][1]})
+            formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
+            search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
 
-        fetchingSingleYoutubeVid(i = 0, search_results= search_results, renderToFrontEnd=False, addOrInsertRandomly="insert")
+            fetchingSingleYoutubeVid(i = 0, search_results= search_results, renderToFrontEnd=False, addOrInsertRandomly="insert")
 
-    for songIndex in recommendedSongs:
-        fetchingYoutubeVidDisposable = rx.range(1).pipe(
-        ops.do_action(lambda i : fetchingRecommendedSongs()),
-        ops.subscribe_on(thread_pool_scheduler)
-        ).subscribe(
-        on_error=lambda e : print("fetching recommeded songs error, {e}"),
-        on_completed=lambda c : print("fetching recommeded songs completed")
-    )
+        for songIndex in recommendedSongs:
+            fetchingYoutubeVidDisposable = rx.range(1).pipe(
+            ops.do_action(lambda i : fetchingRecommendedSongs()),
+            ops.subscribe_on(thread_pool_scheduler)
+            ).subscribe(
+            on_error=lambda e : print("fetching recommeded songs error, {e}"),
+            on_completed=lambda c : print("fetching recommeded songs completed")
+        )
         
 
 
