@@ -79,9 +79,10 @@ class RecommendationSystem:
 
 
     def crawTrackAnalysisDataAndPredict(self):
+        songClusterPath = os.path.join(__location__, "songsCluster.csv")
         
-        if os.path.isfile("songsCluster.csv"):
-            self.clusterPrediction = np.loadtxt("songsCluster.csv",
+        if os.path.isfile(songClusterPath):
+            self.clusterPrediction = np.loadtxt(songClusterPath,
                     delimiter=",", dtype=str)
         else:
             import time
@@ -102,7 +103,7 @@ class RecommendationSystem:
                     self.clusterPrediction.append([prediction[0], self.songsName[i]])
                 except:
                     pass
-            np.savetxt("songsCluster.csv",
+            np.savetxt(songClusterPath,
             self.clusterPrediction,
             delimiter =", ",
             fmt ='% s')
