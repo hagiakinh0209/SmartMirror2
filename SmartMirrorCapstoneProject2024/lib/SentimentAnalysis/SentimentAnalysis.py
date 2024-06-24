@@ -46,7 +46,7 @@ class FER:
 
         self.mp_face_detection = mp.solutions.face_detection
 
-        self.face_detection = self.mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.85)
+        self.face_detection = self.mp_face_detection.FaceDetection( min_detection_confidence=0.85)
             
 
     def _initialize_model(self):
