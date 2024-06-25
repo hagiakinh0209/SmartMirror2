@@ -42,10 +42,11 @@ class ImgProvider(metaclass=SingletonMeta):
 
         self.isRealsenseCamera = isRealsenseCamera
         self.process = Thread(target=self.__run)
-        wCam, hCam = 640, 480
-        fps = 15
+        wCam, hCam = 424, 240
+        fps = 6
         self.img = None
         self.sampleImagesCallback = None
+        self.stopFlag = False
 
         if self.isRealsenseCamera :
             import pyrealsense2 as rs
@@ -102,6 +103,9 @@ class ImgProvider(metaclass=SingletonMeta):
     def __run(self):
         start = time.time()
         while(True):
+            if self.stopFlag:
+                time.sleep(1)
+                continue
             try:
                 if self.isRealsenseCamera:
                     # Get frameset of color and depth

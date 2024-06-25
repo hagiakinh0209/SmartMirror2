@@ -16,8 +16,7 @@ class HandGesture:
         self.preCmd = "firstPreCmd"
         self.commandEnable = False
         self.imgProvider = ImgProvider(isRealsenseCamera)
-    def setStop(self):
-        self.stopFlag = True
+    
     def run(self):
         preNotificationText = ''
         notificationText = "Hãy đưa tay ra trước camera."
@@ -52,8 +51,8 @@ class HandGesture:
             return angle
         while True:
             if(self.stopFlag):
-                self.stopFlag = False
-                break
+                time.sleep(1)
+                continue
             try:
                 img = self.imgProvider.getImage()
               

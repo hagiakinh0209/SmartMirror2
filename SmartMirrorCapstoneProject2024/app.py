@@ -11,7 +11,6 @@ from model.YoutubeVidModel import YoutubeVidList, YoutubeVid
 from pynput.keyboard import Listener, KeyCode
 from lib.Utils import Utils
 from lib.NewsProvider.NewsProvider import NewsProvider
-from lib.SentimentAnalysis.SentimentAnalysis import FER
 from lib.RecommendationSystem.RecommendationSystem import RecommendationSystem
 from lib.ImgProvider.ImgProvider import ImgProvider
 import time
@@ -110,11 +109,16 @@ def onTalk(key):
             Utils.playNotificationSound(isIntro=True)
             socket.send("pause")
             MusicController.playOrPause = False
+            mHandGesture.stopFlag = True
+            imgProvider.stopFlag = True
 
             time.sleep(Utils.talkingDuration)
+            
+            mHandGesture.stopFlag = False
+            imgProvider.stopFlag = False
 
             Utils.playNotificationSound(isIntro=False)
-            MusicController.playOrPause = True
+
         threading.Thread(target=playNotificationSound).start()
         threading.Thread(target=speechToText.start).start()
         
@@ -130,13 +134,20 @@ def show_entries():
     return render_template('design.html', articles = articles)
 
 def onReceiveImage(image):
+    imgProvider.stopFlag = True
+    mHandGesture.stopFlag = True
+    from lib.SentimentAnalysis.SentimentAnalysis import FER
+
+    fer = FER()
     analyzer =  fer.analyzeSentiment(image)
+    imgProvider.stopFlag = False
+    mHandGesture.stopFlag = False
     if analyzer != None:
         topEmotion, score = analyzer
         if topEmotion == "angry" or topEmotion == "angry" or topEmotion == "disgust" or topEmotion == "fear" or topEmotion == "sad":
-            recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1], numberOfSongs=3)
+            recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1], numberOfSongs=1)
         else:
-            recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=3)
+            recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=1)
         print(recommendedSongs)
         
         cluster = recommendationSystem.getCluster()
@@ -162,7 +173,6 @@ def onReceiveImage(image):
 @socket.on('connect')
 def on_connect(msg):
     print('Server received connection')
-    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, MusicController.onModeChange, usingRealsense)
     handGestureThread = threading.Thread(target=mHandGesture.run)
     handGestureThread.start()
     queryYoutubeVidIdAndSendToFrontEnd("most viral songs")
@@ -188,7 +198,7 @@ def queryYoutubeVidIdAndSendToFrontEnd(music_name):
     formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
 
     search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
-    youtubeVidsize = len(search_results) if  len(search_results)<= 10 else 10
+    youtubeVidsize = len(search_results) if  len(search_results)<= 4 else 4
     def on_subscribe():
         isFetching = True
         print("start fetching youtube vid")
@@ -253,8 +263,9 @@ if __name__ == "__main__":
     recommendationSystem.crawTrendingSongs()
 
     recommendedSongs = []
+    mHandGesture = Main.HandGesture(MusicController.playAndPause, MusicController.nextSong, MusicController.previousSong, MusicController.onModeChange, usingRealsense)
 
-    fer = FER()
+    
     
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
