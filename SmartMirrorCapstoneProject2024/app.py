@@ -168,6 +168,7 @@ def onReceiveImage(image):
                 on_completed=lambda c : print("fetching recommeded songs completed")
             )
     except:
+        print("err in onReceiveImage \n\n\n")
         import traceback
         traceback.print_exc()
         

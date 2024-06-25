@@ -43,7 +43,7 @@ class ImgProvider(metaclass=SingletonMeta):
         self.isRealsenseCamera = isRealsenseCamera
         self.process = Thread(target=self.__run)
         wCam, hCam = 424, 240
-        fps = 6
+        fps = 15
         self.img = None
         self.sampleImagesCallback = None
         self.stopFlag = False

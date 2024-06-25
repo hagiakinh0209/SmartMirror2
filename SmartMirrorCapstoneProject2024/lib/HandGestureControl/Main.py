@@ -217,7 +217,7 @@ class HandGesture:
                 # cv2.putText(img,f'angle:{int(angle5_0_17)}',(480,100), cv2.FONT_ITALIC,1,(255,0,0),2)
                 cv2.imshow('Hand LiveFeed',img)
                 # 15fps means period is 67ms, according to Nyquist's criteria, the wait period should be 67/2 =33
-                if cv2.waitKey(33) & 0xFF == ord('q'):
+                if cv2.waitKey(67) & 0xFF == ord('q'):
                     break
 
                 def putText(mode,loc = (250, 450), color = (0, 255, 255)):
