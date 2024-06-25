@@ -134,38 +134,42 @@ def show_entries():
     return render_template('design.html', articles = articles)
 
 def onReceiveImage(image):
-    imgProvider.stopFlag = True
-    mHandGesture.stopFlag = True
-    from lib.SentimentAnalysis.SentimentAnalysis import FER
+    try:
+        imgProvider.stopFlag = True
+        mHandGesture.stopFlag = True
+        from lib.SentimentAnalysis.SentimentAnalysis import FER
 
-    fer = FER()
-    analyzer =  fer.analyzeSentiment(image)
-    imgProvider.stopFlag = False
-    mHandGesture.stopFlag = False
-    if analyzer != None:
-        topEmotion, score = analyzer
-        if topEmotion == "angry" or topEmotion == "angry" or topEmotion == "disgust" or topEmotion == "fear" or topEmotion == "sad":
-            recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1], numberOfSongs=1)
-        else:
-            recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=1)
-        print(recommendedSongs)
-        
-        cluster = recommendationSystem.getCluster()
-        def fetchingRecommendedSongs():
-            query_string = urllib.parse.urlencode({"search_query": cluster[songIndex][1]})
-            formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
-            search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
+        fer = FER()
+        analyzer =  fer.analyzeSentiment(image)
+        imgProvider.stopFlag = False
+        mHandGesture.stopFlag = False
+        if analyzer != None:
+            topEmotion, score = analyzer
+            if topEmotion == "angry" or topEmotion == "angry" or topEmotion == "disgust" or topEmotion == "fear" or topEmotion == "sad":
+                recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1], numberOfSongs=1)
+            else:
+                recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=1)
+            print(recommendedSongs)
+            
+            cluster = recommendationSystem.getCluster()
+            def fetchingRecommendedSongs():
+                query_string = urllib.parse.urlencode({"search_query": cluster[songIndex][1]})
+                formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
+                search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
 
-            fetchingSingleYoutubeVid(i = 0, search_results= search_results, renderToFrontEnd=False, addOrInsertRandomly="insert")
+                fetchingSingleYoutubeVid(i = 0, search_results= search_results, renderToFrontEnd=False, addOrInsertRandomly="insert")
 
-        for songIndex in recommendedSongs:
-            fetchingYoutubeVidDisposable = rx.range(1).pipe(
-            ops.do_action(lambda i : fetchingRecommendedSongs()),
-            ops.subscribe_on(thread_pool_scheduler)
-            ).subscribe(
-            on_error=lambda e : print("fetching recommeded songs error, {e}"),
-            on_completed=lambda c : print("fetching recommeded songs completed")
-        )
+            for songIndex in recommendedSongs:
+                fetchingYoutubeVidDisposable = rx.range(1).pipe(
+                ops.do_action(lambda i : fetchingRecommendedSongs()),
+                ops.subscribe_on(thread_pool_scheduler)
+                ).subscribe(
+                on_error=lambda e : print("fetching recommeded songs error, {e}"),
+                on_completed=lambda c : print("fetching recommeded songs completed")
+            )
+    except:
+        import traceback
+        traceback.print_exc()
         
 
 
