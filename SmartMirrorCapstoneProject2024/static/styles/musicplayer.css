@@ -8,7 +8,7 @@ html {
 
 body {
     margin: 0;
-    font-family: "Raleway", sans-serif;
+    font-family: open sans;
 }
 
 h1 {
@@ -27,7 +27,7 @@ h3 {
 }
 .dateTime{
     font-size: 40px;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-family: open sans;
     color: rgba(255, 255, 255);
     font-weight: 600;
     display: flex;
@@ -71,7 +71,7 @@ h3 {
     float: right;
     position: relative;
     width: 400px;
-    height: 570px;
+    height: 380px;
     margin: auto;
     border-radius: 10px 10px 10px 10px;
     background: transparent linear-gradient(to bottom, rgba(10, 11, 31, 0.8) 50%, rgba(10, 11, 31, 0.8) 70%) repeat scroll 0 0;
@@ -133,11 +133,13 @@ h3 {
 .weather_loading{
     font-size: 25px;
     font-weight: 500;
-    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-family:  open sans;
     color: rgba(255, 255, 255);
 }
 #chatBotAnswerTextBox{
     background: transparent ;
+    width: 715px;
+    height: 500px;
     border-radius: 4px;
     padding: 12px 12px;
     color: #fff;
