@@ -9,7 +9,7 @@ startWordToPlayYoutubeVid = "bật youtube"
 onListeningErrorText = "Âm thanh không rõ ràng, vui lòng thủ lại."
 speakAloudCmd = "Đọc thành tiếng"
 usingRealsense = True
-imageSamplingInterval = 60 #second
+imageSamplingInterval = 120 #second
 
 def checkStartWithString(start : str, string : str) -> bool:
     return string.lower().startswith(start.lower())

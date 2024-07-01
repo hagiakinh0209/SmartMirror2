@@ -158,7 +158,6 @@
             })
             socket.on("speechToTextOutPut_chatbot", function (msg) {
                 console.log(msg.speechToTextOutPut_chatbot);
-                document.getElementById("chatBotEditText").value = msg.speechToTextOutPut_chatbot
                 document.getElementById("commandPrompt").innerText = msg.speechToTextOutPut_chatbot
                 document.getElementById("chatBotLoadingImage").style.display = "block"
             })

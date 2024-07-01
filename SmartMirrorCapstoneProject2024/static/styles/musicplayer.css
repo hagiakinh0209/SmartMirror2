@@ -32,6 +32,7 @@ h3 {
     font-weight: 600;
     display: flex;
     justify-content: center;
+    margin-top: 50px;
 }
 
 .container-fluid {
@@ -149,4 +150,8 @@ h3 {
     border-radius: 4px;
     padding: 12px 12px;
     color: #fff;
+}
+#commandPrompt{
+    font-family:  open sans;
+    color:#e9e4e4
 }
