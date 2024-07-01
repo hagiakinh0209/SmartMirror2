@@ -134,6 +134,7 @@ def show_entries():
     return render_template('design.html', articles = articles)
 
 def onReceiveImage(image):
+    socket.emit("gestureModeChange", json.loads(json.dumps({"gestureModeChange" : "Đang xử lý cảm xúc, vui lòng đợi"})))
     try:
         imgProvider.stopFlag = True
         mHandGesture.stopFlag = True
@@ -171,7 +172,7 @@ def onReceiveImage(image):
         print("err in onReceiveImage \n\n\n")
         import traceback
         traceback.print_exc()
-        
+    socket.emit("gestureModeChange", json.loads(json.dumps({"gestureModeChange" : "Hoàn tất xử lý cảm xúc"})))
 
 
 
