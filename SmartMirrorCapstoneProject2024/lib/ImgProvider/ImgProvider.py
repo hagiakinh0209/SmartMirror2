@@ -72,7 +72,7 @@ class ImgProvider(metaclass=SingletonMeta):
                 print("The demo requires Depth camera with Color sensor")
                 exit(0)
 
-            config.enable_stream(rs.stream.depth, wCam, hCam, rs.format.z16, fps)
+            config.enable_stream(rs.stream.depth, 480, 270, rs.format.z16, fps)
             config.enable_stream(rs.stream.color, wCam, hCam, rs.format.bgr8, fps)
 
             # Start streaming
