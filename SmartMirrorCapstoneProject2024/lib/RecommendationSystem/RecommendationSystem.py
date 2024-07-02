@@ -64,18 +64,20 @@ class RecommendationSystem:
     
 
     def crawTrendingSongs(self):
-
-        rawContent = self.get_content("https://kworb.net/spotify/country/vn_weekly.html")
-        soup = BeautifulSoup(rawContent, 'html.parser')
-        songs = soup.find_all("td", {"class":"text mp"})
-        self.spotifyIds = []
-        self.songsName = []
-        for song in songs:
-            songNameRaw = BeautifulSoup(str(song), 'html.parser').find_all("a")
-            songName = str(songNameRaw[0].contents[0]) + " - " + str(songNameRaw[1].contents[0])
-            spotifyId = songNameRaw[1].get("href")[len("../track/"):-len(".html")]
-            self.spotifyIds.append(spotifyId)
-            self.songsName.append(songName)
+        songClusterPath = os.path.join(__location__, "songsCluster.csv")
+        
+        if not os.path.isfile(songClusterPath):
+            rawContent = self.get_content("https://kworb.net/spotify/country/vn_weekly.html")
+            soup = BeautifulSoup(rawContent, 'html.parser')
+            songs = soup.find_all("td", {"class":"text mp"})
+            self.spotifyIds = []
+            self.songsName = []
+            for song in songs:
+                songNameRaw = BeautifulSoup(str(song), 'html.parser').find_all("a")
+                songName = str(songNameRaw[0].contents[0]) + " - " + str(songNameRaw[1].contents[0])
+                spotifyId = songNameRaw[1].get("href")[len("../track/"):-len(".html")]
+                self.spotifyIds.append(spotifyId)
+                self.songsName.append(songName)
 
 
     def crawTrackAnalysisDataAndPredict(self):
