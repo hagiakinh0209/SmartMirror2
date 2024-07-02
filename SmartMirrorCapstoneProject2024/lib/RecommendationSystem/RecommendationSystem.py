@@ -13,7 +13,8 @@ class RecommendationSystem:
         kmeans = os.path.join(__location__, 'cluster.sav')
         self.loaded_cluster_model = pickle.load(open(kmeans, 'rb'))
         self.loaded_cluster_model._n_threads = _openmp_effective_n_threads()
-        if not os.path.isfile("songsCluster.csv"):
+        songClusterPath = os.path.join(__location__, "songsCluster.csv")
+        if not os.path.isfile(songClusterPath):
             self.getAccessToken()
 
     def get_content(self, url):
