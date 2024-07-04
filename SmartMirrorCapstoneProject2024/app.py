@@ -148,8 +148,10 @@ def onReceiveImage(image):
             topEmotion, score = analyzer
             if topEmotion == "angry" or topEmotion == "angry" or topEmotion == "disgust" or topEmotion == "fear" or topEmotion == "sad":
                 recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1], numberOfSongs=1)
+                emotionVn = "tiêu cực"
             else:
                 recommendedSongs = getRandomSongsIndex(clusterIndex=[0,1,2,3,4], numberOfSongs=1)
+                emotionVn = "tích cực"
             print(recommendedSongs)
             
             cluster = recommendationSystem.getCluster()
@@ -172,7 +174,7 @@ def onReceiveImage(image):
         print("err in onReceiveImage \n\n\n")
         import traceback
         traceback.print_exc()
-    socket.emit("gestureModeChange", json.loads(json.dumps({"gestureModeChange" : "Hoàn tất xử lý cảm xúc"})))
+    socket.emit("gestureModeChange", json.loads(json.dumps({"gestureModeChange" : "Hoàn tất xử lý cảm xúc, bạn đang " + emotionVn})))
 
 
 
