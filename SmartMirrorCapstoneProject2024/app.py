@@ -170,11 +170,12 @@ def onReceiveImage(image):
                 on_error=lambda e : print("fetching recommeded songs error, {e}"),
                 on_completed=lambda c : print("fetching recommeded songs completed")
             )
+        socket.emit("gestureModeChange", json.loads(json.dumps({"gestureModeChange" : "Hoàn tất xử lý cảm xúc, bạn đang " + emotionVn})))
+                
     except:
         print("err in onReceiveImage \n\n\n")
         import traceback
         traceback.print_exc()
-    socket.emit("gestureModeChange", json.loads(json.dumps({"gestureModeChange" : "Hoàn tất xử lý cảm xúc, bạn đang " + emotionVn})))
 
 
 
