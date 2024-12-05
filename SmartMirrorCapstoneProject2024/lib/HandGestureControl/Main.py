@@ -3,27 +3,48 @@ import time,  math, numpy as np
 from . import HandTrackingModule as htm
 # import pyautogui, autopy
 from ctypes import cast, POINTER
+import os
 # from comtypes import CLSCTX_ALL
 # from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 class HandGesture:
-    def __init__(self, playAndPauseCommand, nextSongCommand, previousSongCommand):
+    def __init__(self, playAndPauseCommand, nextSongCommand, previousSongCommand, isRealsenseCamera = False):
         self.playAndPauseCommand = playAndPauseCommand
         self.nextSongCommand = nextSongCommand
         self.previousSongCommand = previousSongCommand
         self.stopFlag = False
+        self.isRealsenseCamera = isRealsenseCamera
+        self.curCmd = "firstCurCmd"
+        self.preCmd = "firstPreCmd"
     def setStop(self):
         self.stopFlag = True
     def run(self):
+        if self.isRealsenseCamera :
+            import pyrealsense2 as rs
+            #Create a context object. This object owns the handles to all connected realsense devices
+            pipeline_1 = rs.pipeline()
+            # Configure streams Cam 1
+            config_1 = rs.config()
+            deviceId = rs.context().devices[0].get_info(rs.camera_info.serial_number)
+            config_1.enable_device(deviceId)
+            config_1.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
-        wCam, hCam = 640, 480
-        cap = cv2.VideoCapture(0)
-        cap.set(3,wCam)
-        cap.set(4,hCam)
+            # Start streaming Cam 1
+            pipeline_1.start(config_1)
+
+            align_to_1 = rs.stream.color
+            align_1 = rs.align(align_to_1)
+
+        
+        else:
+            wCam, hCam = 640, 480
+            cap = cv2.VideoCapture(0)
+            cap.set(3,wCam)
+            cap.set(4,hCam)
         pTime = 0
         #cTime = 0
 
-        detector = htm.handDetector(maxHands=1, detectionCon=0.85, trackCon=0.8)
+        detector = htm.handDetector()
 
         # devices = AudioUtilities.GetSpeakers()
         # interface = devices.Activate(
@@ -31,8 +52,8 @@ class HandGesture:
         # volume = interface.QueryInterface(IAudioEndpointVolume)
         # volRange = volume.GetVolumeRange()   #(-63.5, 0.0, 0.5) min max
 
-        minVol = -63
-        # maxVol = volRange[1]
+        minVol = 0
+        maxVol = 100
         # print(volRange)
         hmin = 50
         hmax = 200
@@ -50,7 +71,21 @@ class HandGesture:
                 self.stopFlag = False
                 break
             try:
-                success, img = cap.read()
+                if self.isRealsenseCamera:
+                    # Wait for a coherent pair of frames: depth and color
+                    frames_1 = pipeline_1.wait_for_frames()
+                    # Align the depth frame to color frame
+                    aligned_frames_1 = align_1.process(frames_1)
+                    # Get aligned frames
+                    # aligned_depth_frame_1 = aligned_frames_1.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+                    color_frame_1 = aligned_frames_1.get_color_frame()
+                    if not color_frame_1:
+                        continue
+                    img = np.asanyarray(color_frame_1.get_data())
+
+            
+                else:
+                    success, img = cap.read()
                 img = detector.findHands(img)
                 lmList = detector.findPosition(img, draw=False)
             # print(lmList)
@@ -101,12 +136,18 @@ class HandGesture:
                         #print('up')
                         #time.sleep(0.1)
                             putText(mode = 'U', loc=(200, 455), color = (0, 255, 0))
+                            self.curCmd = "nextCmd"
+                            if (self.curCmd == self.preCmd):
+                                continue
                             self.nextSongCommand()
 
                         if fingers == [0,1,1,0,0]:
                             #print('down')
                         #  time.sleep(0.1)
                             putText(mode = 'D', loc =  (200, 455), color = (0, 0, 255))
+                            self.curCmd = "preCmd"
+                            if (self.curCmd == self.preCmd):
+                                continue
                             self.previousSongCommand()
                         elif fingers == [0, 0, 0, 0, 0]:
                             active = 0
@@ -137,23 +178,13 @@ class HandGesture:
                                 # print(length)
 
                                 # hand Range 50-300
-                                # Volume Range -65 - 0
-                            #     vol = np.interp(length, [hmin, hmax], [minVol, maxVol])
-                            #     volBar = np.interp(vol, [minVol, maxVol], [400, 150])
-                            #     volPer = np.interp(vol, [minVol, maxVol], [0, 100])
-                            #     print(vol)
-                            #     volN = int(vol)
-                            #     if volN % 4 != 0:
-                            #         volN = volN - volN % 4
-                            #         if volN >= 0:
-                            #             volN = 0
-                            #         elif volN <= -64:
-                            #             volN = -64
-                            #         elif vol >= -11:
-                            #             volN = vol
+                                # Volume Range 0-100
+                                vol = np.interp(length, [hmin, hmax], [minVol, maxVol])
+                                volBar = np.interp(vol, [minVol, maxVol], [400, 150])
+                                volPer = np.interp(vol, [minVol, maxVol], [0, 100])
+                                print(vol)
+                                os.system("amixer -D pulse sset Master " + str(int(vol)) + "%")
 
-                            # #    print(int(length), volN)
-                            #     volume.SetMasterVolumeLevel(vol, None)
                                 if length < 50:
                                     cv2.circle(img, (cx, cy), 11, (0, 0, 255), cv2.FILLED)
 
@@ -176,7 +207,13 @@ class HandGesture:
                         if len(lmList) != 0:
                             if fingers[0] == 0:
                                 cv2.circle(img, (lmList[4][1], lmList[4][2]), 10, (0, 0, 255), cv2.FILLED)  # thumb
+                                self.curCmd = "playAndPauseCmd"
+                                if (self.curCmd == self.preCmd):
+                                    continue
                                 self.playAndPauseCommand()
+
+                self.preCmd = self.curCmd
+                self.curCmd = "noCmd"
                 cTime = time.time()
                 fps = 1/((cTime + 0.01)-pTime)
                 pTime = cTime
